@@ -63,7 +63,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libvulkan-dev libgl1-mesa-dev libxkbcommon-dev
       - name: Check optional adapters
-        run: cargo check -p weave-wgpu --all-targets
+        run: cargo check -p weave-wgpu --features wgpu --all-targets
       - name: Check wasm adapter
         run: |
           rustup target add wasm32-unknown-unknown

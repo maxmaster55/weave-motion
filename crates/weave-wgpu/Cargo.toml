@@ -1,0 +1,33 @@
+[package]
+name = "weave-wgpu"
+description = "GPU rendering adapter for the Weave motion engine (wgpu, optional)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "README.md"
+
+[features]
+default = []
+# The GPU backend is optional: without it the crate only provides the
+# renderer independent draw list, which is useful on its own (tests,
+# headless validation, other backends).
+wgpu = ["dep:wgpu", "dep:bytemuck"]
+
+[dependencies]
+weave-core = { workspace = true, features = ["std"] }
+weave-geometry = { workspace = true, features = ["std"] }
+weave-scene = { workspace = true, features = ["std"] }
+wgpu = { version = "0.20", optional = true }
+bytemuck = { version = "1", optional = true, features = ["derive"] }
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"
