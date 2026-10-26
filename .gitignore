@@ -1,0 +1,16 @@
+# Rust / Cargo
+/target
+**/*.rs.bk
+Cargo.lock.bak
+
+# Nix
+result
+result-*
+.direnv/
+.envrc
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp

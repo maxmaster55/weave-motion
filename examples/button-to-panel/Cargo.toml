@@ -1,0 +1,22 @@
+[package]
+name = "button-to-panel"
+description = "Terminal demo of the Weave pill-to-panel morph: spring bounds, clip morphing and content choreography."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[dependencies]
+weave-core = { workspace = true, features = ["std"] }
+weave-geometry = { workspace = true, features = ["std"] }
+weave-scene = { workspace = true, features = ["std"] }
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"

@@ -1,0 +1,20 @@
+[package]
+name = "spring-playground"
+description = "Interactive terminal playground for exploring Weave spring presets, retargeting and interruption."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[dependencies]
+weave-core = { workspace = true, features = ["std"] }
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"

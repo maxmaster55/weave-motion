@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # The portable core must build and test on every platform we claim to
+  # support. No GPU, no display server, no network access required.
+  portable-core:
+    name: core (${{ matrix.os }}, ${{ matrix.toolchain }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        toolchain: [stable, 1.75.0]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: |
+          rustup toolchain install ${{ matrix.toolchain }} --profile minimal --component rustfmt,clippy
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --workspace
+      - name: Doc
+        run: cargo doc --workspace --no-deps
+
+  # The optional GPU adapter is only built on Linux (it needs Vulkan headers);
+  # it is never required by the portable core.
+  optional-adapters:
+    name: optional adapters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvulkan-dev libgl1-mesa-dev libxkbcommon-dev
+      - name: Check optional adapters
+        run: cargo check -p weave-wgpu --all-targets
+      - name: Check wasm adapter
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo check -p weave-web --target wasm32-unknown-unknown

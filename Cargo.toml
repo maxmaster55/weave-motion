@@ -1,0 +1,52 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/weave-core",
+    "crates/weave-geometry",
+    "crates/weave-scene",
+    "examples/spring-playground",
+    "examples/button-to-panel",
+]
+# `default-members` keeps the "portable core" buildable without any optional
+# adapter toolchains (GPU / wasm). Add adapters explicitly when needed:
+#   cargo build -p weave-wgpu
+#   cargo build -p weave-web --target wasm32-unknown-unknown
+default-members = [
+    "crates/weave-core",
+    "crates/weave-geometry",
+    "crates/weave-scene",
+    "examples/spring-playground",
+    "examples/button-to-panel",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/weave-motion/weave"
+authors = ["Weave Contributors"]
+keywords = ["animation", "spring", "motion", "morphing", "ui"]
+categories = ["gui", "no-std"]
+
+# Internal crates are declared with BOTH `path` and `version` so that:
+#   * local development works from a checkout, and
+#   * `cargo publish` / `cargo add weave-core` from crates.io works unchanged.
+# Consumers in other projects may depend on them by path, git or registry.
+[workspace.dependencies]
+# `default-features = false` is declared *here* (not in the member crates) so
+# that downstream crates can opt into `std` explicitly without relying on
+# cargo's `default-features` override, which needs Cargo >= 1.99.
+weave-core = { version = "0.1.0", path = "crates/weave-core", default-features = false }
+weave-geometry = { version = "0.1.0", path = "crates/weave-geometry", default-features = false }
+weave-scene = { version = "0.1.0", path = "crates/weave-scene", default-features = false }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+
+[profile.bench]
+opt-level = 3
+lto = "thin"
