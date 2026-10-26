@@ -14,16 +14,32 @@
 //! | [`rect`] | axis aligned rectangles |
 //! | [`rounded`] | rounded rectangles and corner radii |
 //! | [`shape`] | shapes and the morphing rules between them |
+//! | [`point`] | points and cubic Bézier segments |
+//! | [`path`] | contours and paths |
+//! | [`correspondence`] | matching the points of two contours |
+//! | [`morph`] | morph plans between compatible paths |
+//! | [`cache`] | caching of morph plans |
+//!
+//! ## Two levels of morphing
+//!
+//! * **Tier A — parametric.** [`RoundedRect`] interpolates its bounds and
+//!   its corner radii. This covers most UI transitions and never breaks.
+//! * **Tier B — contours.** [`MorphPlan`] matches two paths point by point
+//!   (arc-length resampling, winding normalisation, start-point alignment)
+//!   and interpolates the corresponding control points. A plan is refused
+//!   when the result would twist or self-intersect.
 //!
 //! ## Safety rules
 //!
-//! Morphing must never produce an impossible shape. Two mechanisms enforce
-//! that:
+//! Morphing must never produce an impossible shape. Three mechanisms
+//! enforce that:
 //!
 //! 1. the morph progress is **clamped** to `[0, 1]` by default, so a
 //!    spring overshoot cannot extrapolate a rounded rectangle;
 //! 2. corner radii are **clamped** to the bounds of the rectangle after
-//!    every interpolation.
+//!    every interpolation;
+//! 3. a contour morph is **refused** when the correspondence would produce
+//!    a self-intersecting outline.
 //!
 //! ```
 //! use weave_geometry::{Rect, Radii, Shape};
@@ -41,10 +57,23 @@
 
 extern crate alloc;
 
+mod cache;
+mod correspondence;
+mod morph;
+mod path;
+mod point;
 mod rect;
 mod rounded;
 mod shape;
 
+pub use cache::{MorphCache, MorphCacheKey};
+pub use correspondence::{
+    alignment_cost, best_shift, has_self_intersection, normalize_winding, resample, rotate,
+    signed_area,
+};
+pub use morph::{MorphPlan, DEFAULT_SAMPLES};
+pub use path::{Contour, Path};
+pub use point::{CubicSegment, Point};
 pub use rect::Rect;
 pub use rounded::{Radii, RoundedRect};
 pub use shape::{Extrapolation, Morph, Shape};
