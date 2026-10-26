@@ -214,6 +214,17 @@ impl<T: Animatable> Tween<T> {
         self.config.easing.apply(self.progress())
     }
 
+    /// Creates a tween that is already finished, holding `value`.
+    pub fn resting(value: T, config: TweenConfig) -> Self {
+        Self {
+            from: value,
+            to: value,
+            value,
+            elapsed: config.delay + config.duration,
+            config,
+        }
+    }
+
     /// Changes the destination, restarting from the current value.
     ///
     /// Restarting from the current value avoids a visible jump, which is the

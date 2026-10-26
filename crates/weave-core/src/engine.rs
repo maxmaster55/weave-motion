@@ -120,6 +120,23 @@ impl MotionEngine {
         self.insert_tween(key.into(), initial, config)
     }
 
+    /// Registers a scalar tween that is already finished.
+    ///
+    /// Use it for properties that are only animated when they change, so
+    /// an idle scene stays idle.
+    pub fn tween_resting(
+        &mut self,
+        key: impl Into<String>,
+        value: f64,
+        token: MotionToken,
+    ) -> AnimationId {
+        let config = token
+            .tween_config()
+            .expect("spatial tokens have no tween flavour");
+        let config = self.policy.tween_config(config);
+        self.insert_tween(key.into(), value, config)
+    }
+
     /// Registers a scalar tween with an explicit configuration.
     pub fn tween_with_config(
         &mut self,
@@ -270,7 +287,7 @@ impl MotionEngine {
 
     fn insert_tween(&mut self, key: String, initial: f64, config: TweenConfig) -> AnimationId {
         self.scheduler
-            .insert(Some(key), Box::new(Tween::new(initial, initial, config)))
+            .insert(Some(key), Box::new(Tween::resting(initial, config)))
     }
 
     fn existing_key_id(&self, key: &str) -> Option<AnimationId> {
