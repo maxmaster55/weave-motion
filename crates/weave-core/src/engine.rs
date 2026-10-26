@@ -16,6 +16,7 @@
 //! assert!(snapshot.needs_frame);
 //! ```
 
+use alloc::boxed::Box;
 use alloc::string::String;
 
 use crate::policy::MotionPolicy;

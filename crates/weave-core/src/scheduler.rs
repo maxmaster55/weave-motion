@@ -5,6 +5,7 @@
 //! [`MotionSnapshot`]. It never asks for a frame while everything is at
 //! rest.
 
+use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
