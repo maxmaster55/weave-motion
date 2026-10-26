@@ -13,6 +13,7 @@ publish = false
 weave-core = { workspace = true, features = ["std"] }
 weave-geometry = { workspace = true, features = ["std"] }
 weave-scene = { workspace = true, features = ["std"] }
+weave-demo-support = { path = "../demo-support" }
 
 [lints.rust]
 missing_docs = "warn"

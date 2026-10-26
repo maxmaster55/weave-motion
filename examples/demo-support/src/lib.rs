@@ -74,6 +74,30 @@ pub struct Canvas {
     width: usize,
     height: usize,
     cells: Vec<char>,
+    clip: Option<ClipRect>,
+}
+
+/// A rectangular clipping region, in canvas coordinates.
+#[derive(Clone, Copy, Debug)]
+pub struct ClipRect {
+    /// Left edge.
+    pub x: isize,
+    /// Top edge.
+    pub y: isize,
+    /// Width of the region.
+    pub width: usize,
+    /// Height of the region.
+    pub height: usize,
+}
+
+impl ClipRect {
+    /// Whether a point lies inside the region.
+    pub fn contains(&self, x: isize, y: isize) -> bool {
+        x >= self.x
+            && y >= self.y
+            && x < self.x + self.width as isize
+            && y < self.y + self.height as isize
+    }
 }
 
 impl Canvas {
@@ -83,6 +107,7 @@ impl Canvas {
             width,
             height,
             cells: vec![' '; width * height],
+            clip: None,
         }
     }
 
@@ -96,15 +121,34 @@ impl Canvas {
         self.height
     }
 
+    /// Restricts drawing to a rectangle. `None` removes the restriction.
+    ///
+    /// This is how the demos show that content is clipped by the shape of
+    /// the surface it belongs to.
+    pub fn set_clip(&mut self, clip: Option<ClipRect>) {
+        self.clip = clip;
+    }
+
+    /// The active clipping region.
+    pub fn clip(&self) -> Option<ClipRect> {
+        self.clip
+    }
+
     /// Clears the canvas.
     pub fn clear(&mut self) {
         self.cells.iter_mut().for_each(|cell| *cell = ' ');
     }
 
-    /// Writes a character, ignoring out-of-range coordinates.
+    /// Writes a character, ignoring out-of-range coordinates and anything
+    /// outside the clipping region.
     pub fn set(&mut self, x: isize, y: isize, ch: char) {
         if x < 0 || y < 0 {
             return;
+        }
+        if let Some(clip) = self.clip {
+            if !clip.contains(x, y) {
+                return;
+            }
         }
         let (x, y) = (x as usize, y as usize);
         if x >= self.width || y >= self.height {
@@ -147,59 +191,133 @@ impl Canvas {
         radius: usize,
         ch: char,
     ) {
+        self.rounded_rect_outline(x, y, width, height, radius, 1, ch);
+    }
+
+    /// Draws the outline of a rounded rectangle with a given thickness.
+    ///
+    /// Only the ring of the shape is drawn, so the interior stays readable
+    /// — exactly what a UI surface needs.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rounded_rect_outline(
+        &mut self,
+        x: isize,
+        y: isize,
+        width: usize,
+        height: usize,
+        radius: usize,
+        thickness: usize,
+        ch: char,
+    ) {
         if width == 0 || height == 0 {
             return;
         }
 
         let max_radius = width.min(height) / 2;
-        let radius = radius.min(max_radius);
-        if radius == 0 {
-            self.hline(y, x, x + width as isize - 1, ch);
-            self.hline(y + height as isize - 1, x, x + width as isize - 1, ch);
-            self.vline(x, y, y + height as isize - 1, ch);
-            self.vline(x + width as isize - 1, y, y + height as isize - 1, ch);
-            return;
-        }
+        let r = radius.min(max_radius) as isize;
+        let thickness = thickness.max(1) as isize;
+        let w = width as isize;
+        let h = height as isize;
+        let last_x = x + w - 1;
+        let last_y = y + h - 1;
 
-        let radius = radius as isize;
-        let last_x = x + width as isize - 1;
-        let last_y = y + height as isize - 1;
-
-        for row in 0..height as isize {
-            for column in 0..width as isize {
+        for row in 0..h {
+            for column in 0..w {
                 let px = x + column;
                 let py = y + row;
 
-                // Distance from the corner centres decides whether the pixel
-                // belongs to the rounded corner.
-                let (cx, cy) = match (column < radius, row < radius) {
-                    (true, true) => (x + radius - 1, y + radius - 1),
-                    (true, false) => {
-                        if last_y - (y + row) < radius {
-                            (x + radius - 1, last_y - radius + 1)
-                        } else {
-                            (x + radius - 1, y + radius - 1)
-                        }
-                    }
-                    (false, true) => {
-                        if last_x - (x + column) < radius {
-                            (last_x - radius + 1, y + radius - 1)
-                        } else {
-                            (x + radius - 1, y + radius - 1)
-                        }
-                    }
-                    (false, false) => {
-                        if last_x - (x + column) < radius && last_y - (y + row) < radius {
-                            (last_x - radius + 1, last_y - radius + 1)
-                        } else {
-                            (x + radius - 1, y + radius - 1)
-                        }
-                    }
-                };
+                let in_corner = (column < r && row < r)
+                    || (column > w - r - 1 && row < r)
+                    || (column < r && row > h - r - 1)
+                    || (column > w - r - 1 && row > h - r - 1);
 
-                let dx = px - cx;
-                let dy = py - cy;
-                if dx * dx + dy * dy <= radius * radius {
+                if r == 0 {
+                    if px == x || px == last_x || py == y || py == last_y {
+                        self.set(px, py, ch);
+                    }
+                    continue;
+                }
+
+                if in_corner {
+                    let (cx, cy) = if column < r && row < r {
+                        (x + r - 1, y + r - 1)
+                    } else if column > w - r - 1 && row < r {
+                        (last_x - r + 1, y + r - 1)
+                    } else if column < r {
+                        (x + r - 1, last_y - r + 1)
+                    } else {
+                        (last_x - r + 1, last_y - r + 1)
+                    };
+
+                    let dx = px - cx;
+                    let dy = py - cy;
+                    let distance = dx * dx + dy * dy;
+                    let outer = r * r;
+                    let inner = (r - thickness).max(0) * (r - thickness).max(0);
+
+                    if distance <= outer && distance > inner {
+                        self.set(px, py, ch);
+                    }
+                } else if px == x || px == last_x || py == y || py == last_y {
+                    self.set(px, py, ch);
+                }
+            }
+        }
+    }
+
+    /// Fills a rounded rectangle with a character.
+    pub fn rounded_rect_fill(
+        &mut self,
+        x: isize,
+        y: isize,
+        width: usize,
+        height: usize,
+        radius: usize,
+        ch: char,
+    ) {
+        if width == 0 || height == 0 {
+            return;
+        }
+
+        let max_radius = width.min(height) / 2;
+        let r = radius.min(max_radius) as isize;
+        let w = width as isize;
+        let h = height as isize;
+        let last_x = x + w - 1;
+        let last_y = y + h - 1;
+
+        for row in 0..h {
+            for column in 0..w {
+                let px = x + column;
+                let py = y + row;
+
+                if r == 0 {
+                    self.set(px, py, ch);
+                    continue;
+                }
+
+                let in_corner = (column < r && row < r)
+                    || (column > w - r - 1 && row < r)
+                    || (column < r && row > h - r - 1)
+                    || (column > w - r - 1 && row > h - r - 1);
+
+                if in_corner {
+                    let (cx, cy) = if column < r && row < r {
+                        (x + r - 1, y + r - 1)
+                    } else if column > w - r - 1 && row < r {
+                        (last_x - r + 1, y + r - 1)
+                    } else if column < r {
+                        (x + r - 1, last_y - r + 1)
+                    } else {
+                        (last_x - r + 1, last_y - r + 1)
+                    };
+
+                    let dx = px - cx;
+                    let dy = py - cy;
+                    if dx * dx + dy * dy <= r * r {
+                        self.set(px, py, ch);
+                    }
+                } else {
                     self.set(px, py, ch);
                 }
             }

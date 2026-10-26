@@ -20,9 +20,9 @@ use alloc::vec::Vec;
 use weave_core::{
     Animated, AnimationId, MotionEngine, MotionPolicy, MotionSnapshot, MotionToken, SpringConfig,
 };
-use weave_geometry::{Morph, Rect, Shape};
+use weave_geometry::{Morph, Radii, Rect, RoundedRect, Shape};
 
-use crate::choreography::{Choreographer, Cue, Gate};
+use crate::choreography::{Choreographer, Cue, Direction, Gate};
 use crate::id::{ElementId, ElementRegistry};
 use crate::transform::{Flip, Transform, TransitionMode};
 
@@ -78,6 +78,8 @@ impl SceneSnapshot {
 struct ElementState {
     id: ElementId,
     key: String,
+    /// The bounds before the current transition started.
+    first: Rect,
     destination: Rect,
     bounds: AnimationId,
     transform: AnimationId,
@@ -85,6 +87,8 @@ struct ElementState {
     opacity: AnimationId,
     shape_from: Option<Shape>,
     shape_to: Option<Shape>,
+    radii_from: Option<Radii>,
+    radii_to: Option<Radii>,
     mode: TransitionMode,
     content_visible: bool,
     /// Whether the element was placed at least once.
@@ -154,6 +158,7 @@ impl Scene {
         self.elements.push(ElementState {
             id,
             key: key.to_string(),
+            first: Rect::default(),
             destination: Rect::default(),
             bounds,
             transform,
@@ -161,6 +166,8 @@ impl Scene {
             opacity,
             shape_from: None,
             shape_to: None,
+            radii_from: None,
+            radii_to: None,
             mode: TransitionMode::Bounds,
             content_visible: true,
             placed: false,
@@ -190,7 +197,9 @@ impl Scene {
         let position = self.position(id);
         let placed = self.elements[position].placed;
         let previous = self.elements[position].destination;
+        let first = self.presentation_bounds(id);
 
+        self.elements[position].first = if placed { first } else { bounds };
         self.elements[position].destination = bounds;
         self.elements[position].mode = mode;
         self.elements[position].placed = true;
@@ -267,6 +276,47 @@ impl Scene {
         id
     }
 
+    /// Declares the corner radii of an element and starts a morph.
+    ///
+    /// Unlike [`Scene::shape`], the clipping shape follows the **animated**
+    /// bounds of the element: only the corners morph. This is what a
+    /// button that grows into a panel needs — the outline stays glued to
+    /// the surface while its character changes from a pill to a panel.
+    pub fn radii(&mut self, key: &str, radii: Radii) -> ElementId {
+        let id = self.element(key);
+        let position = self.position(id);
+
+        // The radii the element currently shows.
+        let (progress, from, to) = {
+            let state = &self.elements[position];
+            let progress = state
+                .morph
+                .and_then(|morph| self.engine.value(morph))
+                .and_then(|value| value.as_scalar())
+                .unwrap_or(1.0);
+            (progress, state.radii_from, state.radii_to)
+        };
+
+        let current = match (from, to) {
+            (Some(from), Some(to)) => Some(from.lerp(&to, progress.clamp(0.0, 1.0))),
+            (_, Some(to)) => Some(to),
+            _ => None,
+        };
+
+        let config = self.default_spring();
+        let morph = self.engine.scheduler_mut().insert(
+            Some(morph_key(key)),
+            Box::new(Animated::new(0.0_f64, 1.0, config)),
+        );
+
+        let position = self.position(id);
+        self.elements[position].radii_from = Some(current.unwrap_or(radii));
+        self.elements[position].radii_to = Some(radii);
+        self.elements[position].morph = Some(morph);
+
+        id
+    }
+
     /// Sets the opacity target of an element.
     pub fn opacity(&mut self, key: &str, opacity: f64) -> ElementId {
         let id = self.element(key);
@@ -276,8 +326,34 @@ impl Scene {
         id
     }
 
-    /// Shows or hides the content of an element without animating it.
+    /// Hands a velocity to the bounds animation of an element.
     ///
+    /// This is the gesture handoff: during a drag the application drives
+    /// the element directly, and when the finger is released the velocity
+    /// of the gesture is given to the spring. The spring keeps that
+    /// velocity, so the element continues the gesture instead of starting
+    /// a new animation.
+    pub fn set_bounds_velocity(&mut self, key: &str, velocity: Rect) -> bool {
+        let Some(id) = self.registry.get(key) else {
+            return false;
+        };
+        let Some(position) = self.position_of(id) else {
+            return false;
+        };
+        let animation = self.elements[position].bounds;
+
+        let Some(value) = self
+            .engine
+            .scheduler_mut()
+            .get_animated_mut::<Rect>(animation)
+        else {
+            return false;
+        };
+        value.set_velocity(velocity);
+        true
+    }
+
+    /// Shows or hides the content of an element without animating it.    ///
     /// The content flag is what the renderer uses to decide whether to draw
     /// text and icons; the opacity is animated separately.
     pub fn set_content_visible(&mut self, key: &str, visible: bool) -> ElementId {
@@ -329,6 +405,24 @@ impl Scene {
         let id = self.registry.get(key)?;
         let position = *self.index.get(&id.raw())?;
         Some(self.presentation_of(&self.elements[position]))
+    }
+
+    /// The current animated bounds of an element.
+    pub fn animated_bounds(&self, key: &str) -> Option<Rect> {
+        let id = self.registry.get(key)?;
+        let position = self.position_of(id)?;
+        Some(self.animated_bounds_of(self.elements[position].bounds))
+    }
+
+    /// The current velocity of the bounds animation of an element.
+    pub fn bounds_velocity(&self, key: &str) -> Option<Rect> {
+        let id = self.registry.get(key)?;
+        let position = self.position_of(id)?;
+        let animation = self.elements[position].bounds;
+        self.engine
+            .scheduler()
+            .get_animated::<Rect>(animation)
+            .map(|animated| animated.velocity())
     }
 
     /// `true` when nothing is moving any more.
@@ -394,31 +488,39 @@ impl Scene {
                 .presentation_of_element(*element)
                 .map(|presentation| presentation.morph_progress >= *threshold)
                 .unwrap_or(false),
-            Gate::WidthRatio { element, threshold } => {
+            Gate::Progress {
+                element,
+                threshold,
+                direction,
+            } => {
                 let Some(presentation) = self.presentation_of_element(*element) else {
                     return false;
                 };
                 let Some(position) = self.position_of(*element) else {
                     return false;
                 };
-                let target = self.elements[position].destination.width;
-                if target <= 0.0 {
+                let state = &self.elements[position];
+
+                // The gate only opens while the element moves in the
+                // expected direction.
+                let delta = state.destination.width - state.first.width;
+                let direction_matches = match direction {
+                    Direction::Rising => delta > 0.0,
+                    Direction::Falling => delta < 0.0,
+                };
+                if !direction_matches {
                     return false;
                 }
-                presentation.bounds.width / target >= *threshold
-            }
-            Gate::HeightRatio { element, threshold } => {
-                let Some(presentation) = self.presentation_of_element(*element) else {
-                    return false;
+
+                // How far the element travelled between its previous and its
+                // new bounds, as a fraction of the whole distance.
+                let progress = if delta.abs() < f64::EPSILON {
+                    1.0
+                } else {
+                    (presentation.bounds.width - state.first.width) / delta
                 };
-                let Some(position) = self.position_of(*element) else {
-                    return false;
-                };
-                let target = self.elements[position].destination.height;
-                if target <= 0.0 {
-                    return false;
-                }
-                presentation.bounds.height / target >= *threshold
+
+                progress >= *threshold
             }
             Gate::Opacity { element, threshold } => self
                 .presentation_of_element(*element)
@@ -428,7 +530,7 @@ impl Scene {
     }
 
     fn presentation_of(&self, state: &ElementState) -> Presentation {
-        let bounds = self.animated_bounds(state.bounds);
+        let bounds = self.animated_bounds_of(state.bounds);
         let transform = self.animated_transform(state.transform);
         let opacity = self
             .engine
@@ -436,10 +538,17 @@ impl Scene {
             .and_then(|value| value.as_scalar())
             .unwrap_or(1.0);
         let morph_progress = self.morph_progress(state);
-        let clip = state.shape_from.zip(state.shape_to).and_then(|(from, to)| {
-            let morph = Morph::new(from, to)?;
-            morph.apply(morph_progress)
-        });
+        let clip = if let (Some(from), Some(to)) = (state.radii_from, state.radii_to) {
+            // The outline follows the animated bounds; only the corners
+            // morph.
+            let radii = from.lerp(&to, morph_progress.clamp(0.0, 1.0));
+            Some(Shape::RoundedRect(RoundedRect::new(bounds, radii)))
+        } else {
+            state.shape_from.zip(state.shape_to).and_then(|(from, to)| {
+                let morph = Morph::new(from, to)?;
+                morph.apply(morph_progress)
+            })
+        };
 
         Presentation {
             id: state.id,
@@ -467,7 +576,7 @@ impl Scene {
             .unwrap_or(if state.shape_to.is_some() { 1.0 } else { 0.0 })
     }
 
-    fn animated_bounds(&self, id: AnimationId) -> Rect {
+    fn animated_bounds_of(&self, id: AnimationId) -> Rect {
         self.engine
             .scheduler()
             .get_animated::<Rect>(id)
@@ -487,7 +596,7 @@ impl Scene {
         let Some(position) = self.position_of(id) else {
             return Rect::default();
         };
-        self.animated_bounds(self.elements[position].bounds)
+        self.animated_bounds_of(self.elements[position].bounds)
     }
 
     fn insert_bounds(&mut self, key: &str, initial: Rect, config: SpringConfig) -> AnimationId {

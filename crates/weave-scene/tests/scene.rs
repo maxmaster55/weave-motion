@@ -2,7 +2,7 @@
 
 use weave_core::MotionPolicy;
 use weave_geometry::{Rect, Shape};
-use weave_scene::{Cue, Gate, Scene, TransitionMode};
+use weave_scene::{Cue, Direction, Gate, Scene, TransitionMode};
 
 fn rect(x: f64, y: f64, width: f64, height: f64) -> Rect {
     Rect::new(x, y, width, height)
@@ -137,9 +137,10 @@ fn choreography_fires_when_the_gate_opens() {
     scene.set_content_visible("title", false);
 
     scene.cue(
-        Gate::WidthRatio {
+        Gate::Progress {
             element: panel,
             threshold: 0.5,
+            direction: Direction::Rising,
         },
         Cue::RevealContent {
             element: scene.element_id("title").unwrap(),

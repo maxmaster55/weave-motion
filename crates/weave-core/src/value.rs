@@ -96,6 +96,11 @@ impl<T: Animatable> Animated<T> {
         self.target = target;
     }
 
+    /// Overrides the velocity, for example when a gesture is released.
+    pub fn set_velocity(&mut self, velocity: T) {
+        self.velocity = velocity;
+    }
+
     /// Jumps to `value` and cancels any motion.
     pub fn snap(&mut self, value: T) {
         self.value = value;

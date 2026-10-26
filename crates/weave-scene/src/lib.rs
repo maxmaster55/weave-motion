@@ -52,7 +52,7 @@ mod id;
 mod scene;
 mod transform;
 
-pub use choreography::{Choreographer, Cue, Gate};
+pub use choreography::{Choreographer, Cue, Direction, Gate};
 pub use id::{ElementId, ElementRegistry};
 pub use scene::{Presentation, Scene, SceneSnapshot};
 pub use transform::{ElementTransition, Flip, Transform, TransitionMode};

@@ -10,27 +10,30 @@
 
 use crate::id::ElementId;
 
+/// The direction of an element's current transition.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Direction {
+    /// The element grows towards its destination.
+    Rising,
+    /// The element shrinks towards its destination.
+    Falling,
+}
+
 /// A condition that must become true before a cue may fire.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Gate {
+    /// The element reached `threshold` (0..1) of the distance between its
+    /// previous and its new bounds, while moving in `direction`.
+    Progress {
+        /// The element to watch.
+        element: ElementId,
+        /// The threshold, between 0 and 1.
+        threshold: f64,
+        /// The direction the transition has to move in.
+        direction: Direction,
+    },
     /// The shape morph of an element progressed past `threshold` (0..1).
     MorphProgress {
-        /// The element to watch.
-        element: ElementId,
-        /// The threshold, between 0 and 1.
-        threshold: f64,
-    },
-    /// The animated width of an element reached `threshold` times the width
-    /// of its destination.
-    WidthRatio {
-        /// The element to watch.
-        element: ElementId,
-        /// The threshold, between 0 and 1.
-        threshold: f64,
-    },
-    /// The animated height of an element reached `threshold` times the
-    /// height of its destination.
-    HeightRatio {
         /// The element to watch.
         element: ElementId,
         /// The threshold, between 0 and 1.
