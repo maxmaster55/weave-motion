@@ -7,8 +7,13 @@
 //!
 //! ## Contents
 //!
-//! * [`spring`] — the exact-time damped-spring solver at the heart of Weave.
-//! * [`Spring`] / [`SpringConfig`] — a scalar value driven by that solver.
+//! | Module | Purpose |
+//! |---|---|
+//! | [`spring`] | exact-time damped-spring solver |
+//! | [`value`] | [`Animated<T>`]: a spring-driven property of any interpolable type |
+//! | [`tween`] | fixed-duration tweens and easing curves |
+//! | [`tokens`] | named motion presets |
+//! | [`snapshot`] | renderer-agnostic value snapshots |
 //!
 //! ## Design rules
 //!
@@ -22,15 +27,16 @@
 //!    builds, works on `no_std` + `alloc`, and contains no `unsafe` code.
 //!
 //! ```
-//! use weave_core::{Spring, SpringConfig};
+//! use weave_core::{Animated, SpringConfig, Vec2};
 //!
 //! let config = SpringConfig::unit_mass(300.0, 0.8)?;
-//! let mut spring = Spring::new(0.0, 1.0, config);
+//! let mut scale = Animated::new(Vec2::ONE, Vec2::splat(1.06), config);
 //!
-//! while spring.advance(1.0 / 60.0) {
-//!     // ... render `spring.value()`
-//! }
-//! assert!(spring.is_settled());
+//! scale.advance(1.0 / 60.0);
+//! let velocity = scale.velocity();
+//!
+//! scale.set_target(Vec2::ONE);
+//! assert_eq!(scale.velocity(), velocity);
 //! # Ok::<(), weave_core::SpringError>(())
 //! ```
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -39,12 +45,24 @@
 
 extern crate alloc;
 
+mod animatable;
 mod error;
 mod math;
+mod snapshot;
 mod spring;
+mod tokens;
+mod tween;
+mod types;
+mod value;
 
+pub use animatable::Animatable;
 pub use error::SpringError;
+pub use snapshot::ValueSnapshot;
 pub use spring::{solve, Spring, SpringConfig, DEFAULT_POSITION_EPSILON, DEFAULT_VELOCITY_EPSILON};
+pub use tokens::{MotionPreset, MotionToken};
+pub use tween::{Easing, Tween, TweenConfig};
+pub use types::{Vec2, Vec4};
+pub use value::Animated;
 
 /// Version of the Weave engine this crate belongs to.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
