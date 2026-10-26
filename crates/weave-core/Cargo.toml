@@ -17,6 +17,14 @@ default = ["std"]
 # (embedded, WASM without std shims, custom engines). `alloc` is always
 # required because the scheduler stores collections.
 std = []
+# Pure-Rust math for `no_std` builds:
+#   cargo build -p weave-core --no-default-features --features libm
+libm = ["dep:libm"]
+
+[dependencies]
+# Pure-Rust math for `no_std` builds. With `std` enabled the standard
+# library's intrinsics are used instead.
+libm = { version = "0.2", optional = true }
 
 [lints.rust]
 missing_docs = "warn"
