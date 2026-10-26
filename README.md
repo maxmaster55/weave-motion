@@ -1,137 +1,200 @@
-# Weave — expressive motion engine
+<div align="center">
 
-**Weave** is a portable, renderer-independent Rust motion engine. It brings
-spring-based, interruption-safe transitions, shape morphing and shared-element
-choreography to applications including **Weaver** and **Loom**.
+# weave
 
-> Weave is inspired by the *concepts* behind Material 3 Expressive
-> (spring-driven spatial motion, separate effects motion, shape morphing,
-> shared-element transitions). It is not a Google product, port or
-> endorsement, and its presets are **not** official Material tokens.
+### Motion that follows through.
 
-## Why Weave exists
+Spring physics, shape morphing, and shared-element choreography for Rust.
+<br>
+Change the destination. Keep the momentum.
 
-Motion that restarts from zero on every interruption feels broken. Weave is
-built around a small number of hard rules:
+**Renderer independent** · **Interruption safe** · **`no_std` + `alloc`**
 
-* **Retargetable** — a new target never snaps a moving value or discards its
-  velocity.
-* **Exact-time physics** — springs use a closed-form damped-oscillator
-  solution, so the result does not depend on frame cadence.
-* **Idle at rest** — no frames are requested while every animation is settled.
-* **Portable** — the core has no third-party dependencies, builds on
-  `no_std` + `alloc`, and the adapters (GPU, web) are strictly optional.
+[See it move](#see-it-move) · [Get started](#get-started) · [Use it in your app](#use-it-in-your-app) · [Documentation](#documentation)
 
-## Workspace layout
+</div>
 
-```text
-weave/
-├── crates/
-│   ├── weave-core/      # springs, tweens, tokens, clock, scheduler (no deps)
-│   ├── weave-geometry/  # normalized geometry, rounded-rect + Bézier morphing
-│   ├── weave-scene/     # stable element identity, FLIP, choreography
-│   ├── weave-wgpu/      # optional GPU adapter
-│   └── weave-web/       # optional WASM/DOM adapter
-├── examples/
-│   ├── demo-support/    # shared terminal helpers for the demos
-│   ├── spring-playground/   # interactive spring playground (terminal)
-│   └── button-to-panel/     # pill -> panel morph demo (terminal)
-├── docs/                # architecture, portability and profiling guides
-├── flake.nix            # `nix develop` / `nix build` / `nix flake check`
-└── Makefile             # portable task runner (cargo only)
-```
+<br>
 
-## Quick start
+![A pill-shaped button expands into a rounded panel and collapses back, driven by Weave scene bounds and clip geometry.](docs/assets/pill-to-panel.gif)
 
-```bash
-nix develop          # recommended on NixOS
-# or, with a plain toolchain:
-cargo build --workspace
-cargo test --workspace
-cargo run -p spring-playground
-cargo run -p button-to-panel
-```
+<div align="center">
+<sub>Real engine samples, rendered as a documentation illustration. No GPU or browser required.</sub>
+</div>
 
-Without Nix:
+## See it move
+
+### One surface, two states
+
+The button above keeps its identity as its bounds and rounded clip change.
+Layout supplies the destination; Weave produces the presentation state.
+Text stays at a fixed size rather than stretching with the surface.
+
+Try the terminal version and reverse it while it moves:
 
 ```sh
-make build      # cargo build --workspace
-make test       # cargo test --workspace
-make check      # fmt + clippy + tests
+cargo run -p button-to-panel -- --interactive
 ```
 
-## Using Weave from another project
+Enter `p` to expand, `b` to collapse, `m` to toggle reduced motion, or `q` to quit.
 
-The crates are plain Cargo packages with **path + version** metadata, so they
-can be consumed in three ways:
+### Choose the feel
+
+![Four spring presets moving to the same destination: fast, default, expressive, and gentle.](docs/assets/spring-presets.gif)
+
+Four presets, one destination. Fast feedback, everyday motion, a little
+overshoot, or a quiet settle. These are Weave's own starting points; tune
+them to the distance and the surface you're animating.
+
+```sh
+cargo run -p spring-playground -- --interactive
+```
+
+Enter `1` or `0` to move, `p expressive_spatial` to change the preset,
+`t 0.5` to choose a target, or `m` to toggle reduced motion.
+
+### Interrupt without starting over
+
+![A spring trajectory follows a changing target while preserving its position and velocity through each reversal.](docs/assets/retargeting.gif)
+
+The dim line is the destination; the bright curve is the spring's position.
+Changing the target preserves position and velocity. A reversal can keep
+travelling briefly before turning around, just as momentum requires.
+
+All three previews use deterministic samples from `weave-core` and
+`weave-scene`. They illustrate the engine's output; they are not recordings
+of the optional GPU or browser adapters.
+
+<details>
+<summary>Regenerate the animations</summary>
+
+```sh
+nix develop .#docs --command python tools/render_readme.py
+```
+
+The [sample exporter](crates/weave-scene/examples/readme_samples.rs) runs the
+actual springs and scene at 30 Hz. The [renderer](tools/render_readme.py)
+turns those values into the GIFs checked into `docs/assets/`.
+
+</details>
+
+## Get started
+
+```sh
+git clone https://github.com/maxmaster55/weave-engine.git
+cd weave-engine
+nix develop
+cargo run -p button-to-panel -- --interactive
+```
+
+This repository is currently private; cloning requires an authorized GitHub
+account. With an existing Rust toolchain, you can skip `nix develop`.
+
+```sh
+cargo build --workspace
+cargo test --workspace
+```
+
+Running either terminal demo without `--interactive` prints its scripted
+motion report. `make build`, `make test`, and `make check` are also available.
+
+## Use it in your app
+
+From a local checkout:
 
 ```toml
-# 1. from a local checkout
+[dependencies]
 weave-core = { path = "../weave_engine/crates/weave-core" }
-
-# 2. from git (no publish required)
-weave-core = { git = "https://github.com/weave-motion/weave", package = "weave-core" }
-
-# 3. from crates.io, once published
-weave-core = "0.1"
 ```
 
-A five line example:
+Or use the Git repository, with GitHub access configured:
+
+```toml
+[dependencies]
+weave-core = { git = "https://github.com/maxmaster55/weave-engine.git" }
+```
+
+Pin a reviewed commit with Cargo's `rev` option for reproducible builds.
+The crates are prepared for registry publishing, but this README does not
+assume they have been published to crates.io.
 
 ```rust
-use weave_core::{Animated, SpringConfig, Vec2};
+use weave_core::{Spring, SpringConfig};
 
-let config = SpringConfig::unit_mass(300.0, 0.8)?;
-let mut scale = Animated::new(Vec2::ONE, Vec2::splat(1.06), config);
+fn main() -> Result<(), weave_core::SpringError> {
+    let config = SpringConfig::unit_mass(300.0, 0.8)?;
+    let mut position = Spring::resting(0.0, config);
 
-scale.advance(1.0 / 60.0);
-let velocity = scale.velocity();
+    position.set_target(100.0);
+    position.advance(1.0 / 60.0); // elapsed seconds from your frame clock
 
-// Interrupt: the destination changes, the motion continues.
-scale.set_target(Vec2::ONE);
-assert_eq!(scale.velocity(), velocity);
-# Ok::<(), weave_core::SpringError>(())
+    // Change your mind: position and velocity carry through.
+    let velocity = position.velocity();
+    position.set_target(0.0);
+    assert_eq!(position.velocity(), velocity);
+
+    // Present position.value(); request another frame while active.
+    assert!(position.is_active());
+    Ok(())
+}
 ```
 
-See [`docs/PORTABILITY.md`](docs/PORTABILITY.md) for the full guide: `no_std`
-usage, feature flags, adapter isolation and the Nix workflow.
+The solver uses a closed-form damped oscillator rather than numerical
+integration. Physics follows elapsed time across different frame cadences.
+Settled animations stop requesting frames through the scheduler; your
+application controls its event loop.
+
+For embedded or bare Wasm use, select `default-features = false` and
+`features = ["libm"]`. The core requires `alloc`; renderer dependencies stay
+optional. See the [portability guide](docs/PORTABILITY.md).
+
+## Build only what you need
+
+| Crate | Responsibility |
+| :--- | :--- |
+| [`weave-core`](crates/weave-core) | Exact-time springs, tweens, motion tokens, clock, scheduler, and motion policy |
+| [`weave-geometry`](crates/weave-geometry) | Rounded rectangles, Bézier correspondence, validated morphs, and caching |
+| [`weave-scene`](crates/weave-scene) | Stable identity, shared-element FLIP, bounds transitions, and choreography |
+| [`weave-wgpu`](crates/weave-wgpu) | Draw lists and an optional GPU renderer (`wgpu` feature) |
+| [`weave-web`](crates/weave-web) | CSS presentation and an optional DOM adapter (`web` feature) |
+
+```text
+state + layout → scene → spring / tween → presentation → your renderer
+                            ↑
+                   geometry + motion policy
+```
+
+Weave owns motion. Your application owns layout, input, rendering, and the
+frame clock. Reduced and Off policies let applications adapt motion without
+changing their semantic state.
 
 ## Documentation
 
-| Document | Contents |
-|---|---|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | the layers, the frame flow, the decisions |
-| [`docs/PORTABILITY.md`](docs/PORTABILITY.md) | consuming Weave, features, `no_std`, Nix |
-| [`docs/PROFILING.md`](docs/PROFILING.md) | measured numbers and their budgets |
-| [`DESIGN.md`](DESIGN.md) | the original product and engineering specification |
-| [`SKILL.md`](SKILL.md) | the agent skill for implementing and using Weave |
-| [`references/`](references) | physics, morphing, integration and testing notes |
-| [`CHANGELOG.md`](CHANGELOG.md) | what changed |
+| Start here | What you'll find |
+| :--- | :--- |
+| [Architecture](docs/ARCHITECTURE.md) | Layers, frame flow, and engineering decisions |
+| [Portability & integration](docs/PORTABILITY.md) | Features, `no_std`, consuming the crates, and Nix |
+| [Profiling](docs/PROFILING.md) | Recorded measurements and their limits |
+| [Design](DESIGN.md) | Product direction and technical specification |
+| [Implementation skill](SKILL.md) | Instructions for agents working with Weave |
+| [Technical references](references/) | Physics, morphing, integration, and testing |
+| [Changelog](CHANGELOG.md) | Release notes |
 
-## Status
+## Current boundaries
 
-| Milestone | Status |
-|---|---|
-| 1. Core & playground: analytic spring, tokens, clock, retarget tests | ✅ |
-| 2. Simple morphs: rounded rects, pill/panel, clip + content coordination | ✅ |
-| 3. Advanced geometry: contour alignment, Bézier interpolation, caching | ✅ |
-| 4. Scene: stable IDs, shared-element FLIP, choreography, cancellation | ✅ |
-| 5. Adapters: `weave-wgpu` prototype, `weave-web` (wasm) adapter | ✅ |
-| 6. Optimization & compatibility: profiling, reduced motion, polished API | ✅ |
+The portable core, geometry, scene, and terminal demos are implemented.
+The optional GPU and web adapters have been compiled; execution on a GPU
+or in a browser was not verified in the reference environment. The previews
+above do not establish adapter performance or device frame rates.
 
-### Known limits
+Morphing supports compatible contours. Topology changes such as holes,
+splits, or merges need a caller-provided fallback. Spring presets still
+need perceptual tuning for each product and distance.
 
-* The `wgpu` adapter compiles and is structured like a real renderer, but it
-  could not be executed in the reference environment (no GPU, no display
-  server). The `weave-web` adapter was compiled for `wasm32-unknown-unknown`,
-  not executed in a browser.
-* Topology changing morphs (holes, splitting, merging) are out of scope: a
-  morph is only created between compatible paths, otherwise the caller
-  crossfades.
-* The presets are starting points. They still need perceptual tuning per
-  product, per distance and per device scale.
+Weave takes inspiration from Material 3 Expressive motion concepts. It is
+not a Google product or endorsement, and its presets are not official
+Material tokens.
 
 ## License
 
-Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
-[MIT license](LICENSE-MIT) at your option.
+[MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.

@@ -93,6 +93,11 @@
     {
       devShells = forEachSupportedSystem ({ pkgs, ... }: {
         default = mkDevShell pkgs;
+        # Deterministic README GIF generation using samples from the engine.
+        docs = pkgs.mkShell {
+          packages = rustTools pkgs ++ [ (pkgs.python3.withPackages (ps: [ ps.pillow ])) ];
+          WEAVE_DOCS_FONT = "${pkgs.dejavu_fonts}/share/fonts/truetype/DejaVuSans.ttf";
+        };
       });
 
       # ---------------------------------------------------------------------------
