@@ -425,6 +425,29 @@ impl Scene {
             .map(|animated| animated.velocity())
     }
 
+    /// A human readable report of the current state.
+    ///
+    /// Useful in a debugger or in a test; the engine itself never builds
+    /// strings.
+    pub fn debug_report(&self) -> alloc::string::String {
+        crate::debug::report(self, &self.snapshot())
+    }
+
+    /// The current state as an immutable snapshot.
+    pub fn snapshot(&self) -> SceneSnapshot {
+        let presentations = self
+            .elements
+            .iter()
+            .map(|state| self.presentation_of(state))
+            .collect();
+        SceneSnapshot {
+            timestamp: 0.0,
+            dt: 0.0,
+            presentations,
+            needs_frame: self.engine.needs_frame(),
+        }
+    }
+
     /// `true` when nothing is moving any more.
     pub fn is_idle(&self) -> bool {
         self.engine.is_idle()

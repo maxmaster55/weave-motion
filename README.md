@@ -19,8 +19,8 @@ built around a small number of hard rules:
 * **Exact-time physics** — springs use a closed-form damped-oscillator
   solution, so the result does not depend on frame cadence.
 * **Idle at rest** — no frames are requested while every animation is settled.
-* **Portable** — the core has no third-party dependencies and builds on
-  `no_std` + `alloc`; adapters (GPU, web) are strictly optional.
+* **Portable** — the core has no third-party dependencies, builds on
+  `no_std` + `alloc`, and the adapters (GPU, web) are strictly optional.
 
 ## Workspace layout
 
@@ -33,9 +33,10 @@ weave/
 │   ├── weave-wgpu/      # optional GPU adapter
 │   └── weave-web/       # optional WASM/DOM adapter
 ├── examples/
+│   ├── demo-support/    # shared terminal helpers for the demos
 │   ├── spring-playground/   # interactive spring playground (terminal)
 │   └── button-to-panel/     # pill -> panel morph demo (terminal)
-├── docs/                # architecture + portability guides
+├── docs/                # architecture, portability and profiling guides
 ├── flake.nix            # `nix develop` / `nix build` / `nix flake check`
 └── Makefile             # portable task runner (cargo only)
 ```
@@ -75,29 +76,60 @@ weave-core = { git = "https://github.com/weave-motion/weave", package = "weave-c
 weave-core = "0.1"
 ```
 
+A five line example:
+
+```rust
+use weave_core::{Animated, SpringConfig, Vec2};
+
+let config = SpringConfig::unit_mass(300.0, 0.8)?;
+let mut scale = Animated::new(Vec2::ONE, Vec2::splat(1.06), config);
+
+scale.advance(1.0 / 60.0);
+let velocity = scale.velocity();
+
+// Interrupt: the destination changes, the motion continues.
+scale.set_target(Vec2::ONE);
+assert_eq!(scale.velocity(), velocity);
+# Ok::<(), weave_core::SpringError>(())
+```
+
 See [`docs/PORTABILITY.md`](docs/PORTABILITY.md) for the full guide: `no_std`
 usage, feature flags, adapter isolation and the Nix workflow.
 
-## Specification documents
+## Documentation
 
-* [`DESIGN.md`](DESIGN.md): complete product and engineering design specification.
-* [`SKILL.md`](SKILL.md): agent skill entry point for implementing and using Weave.
-* [`references/PHYSICS.md`](references/PHYSICS.md): spring mathematics, numerical strategies, timing, presets.
-* [`references/MORPHING.md`](references/MORPHING.md): geometry and shape-matching algorithms.
-* [`references/INTEGRATION.md`](references/INTEGRATION.md): API, scene transitions, adapters, accessibility.
-* [`references/TESTING.md`](references/TESTING.md): test matrix and completion criteria.
-* [`IMPLEMENTATION_PROMPT.md`](IMPLEMENTATION_PROMPT.md): ready-to-paste instruction for a coding agent.
+| Document | Contents |
+|---|---|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | the layers, the frame flow, the decisions |
+| [`docs/PORTABILITY.md`](docs/PORTABILITY.md) | consuming Weave, features, `no_std`, Nix |
+| [`docs/PROFILING.md`](docs/PROFILING.md) | measured numbers and their budgets |
+| [`DESIGN.md`](DESIGN.md) | the original product and engineering specification |
+| [`SKILL.md`](SKILL.md) | the agent skill for implementing and using Weave |
+| [`references/`](references) | physics, morphing, integration and testing notes |
+| [`CHANGELOG.md`](CHANGELOG.md) | what changed |
 
 ## Status
 
 | Milestone | Status |
 |---|---|
-| 1. Core & playground: analytic spring, tokens, clock, retarget tests | 🚧 in progress |
-| 2. Simple morphs: rounded rects, pill/panel, clip + content coordination | ⬜ planned |
-| 3. Advanced geometry: contour alignment, Bézier interpolation, caching | ⬜ planned |
-| 4. Scene: stable IDs, shared-element FLIP, choreography, cancellation | ⬜ planned |
-| 5. Adapters: `weave-wgpu` prototype, `weave-web` (wasm) adapter | ⬜ planned |
-| 6. Optimization & compatibility: profiling, reduced motion, polished API | ⬜ planned |
+| 1. Core & playground: analytic spring, tokens, clock, retarget tests | ✅ |
+| 2. Simple morphs: rounded rects, pill/panel, clip + content coordination | ✅ |
+| 3. Advanced geometry: contour alignment, Bézier interpolation, caching | ✅ |
+| 4. Scene: stable IDs, shared-element FLIP, choreography, cancellation | ✅ |
+| 5. Adapters: `weave-wgpu` prototype, `weave-web` (wasm) adapter | ✅ |
+| 6. Optimization & compatibility: profiling, reduced motion, polished API | ✅ |
+
+### Known limits
+
+* The `wgpu` adapter compiles and is structured like a real renderer, but it
+  could not be executed in the reference environment (no GPU, no display
+  server). The `weave-web` adapter was compiled for `wasm32-unknown-unknown`,
+  not executed in a browser.
+* Topology changing morphs (holes, splitting, merging) are out of scope: a
+  morph is only created between compatible paths, otherwise the caller
+  crossfades.
+* The presets are starting points. They still need perceptual tuning per
+  product, per distance and per device scale.
 
 ## License
 

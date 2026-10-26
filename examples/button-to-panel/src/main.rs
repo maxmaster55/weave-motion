@@ -48,5 +48,6 @@ INTERACTIVE COMMANDS:
     b / p        collapse / expand
     m            toggle reduced motion
     v <vx> <vy>  hand a velocity to the surface (like a released drag)
+    d            toggle the debug overlay
     q            quit"
 }

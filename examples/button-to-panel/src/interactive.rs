@@ -42,13 +42,20 @@ pub fn run() {
     let _ = stdout.flush();
 
     let mut running = true;
+    let mut show_debug = false;
 
     while running {
         demo.tick(clock.elapsed());
-        render(&demo);
+        render(&demo, show_debug);
 
         match commands.recv_timeout(std::time::Duration::from_millis(16)) {
-            Ok(command) => running = handle_command(&mut demo, command.trim()),
+            Ok(command) => {
+                let command = command.trim();
+                if command == "d" {
+                    show_debug = !show_debug;
+                }
+                running = handle_command(&mut demo, command);
+            }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => running = false,
         }
@@ -102,18 +109,25 @@ fn print_help() {
 }
 
 /// Draws the demo.
-fn render(demo: &Demo) {
+fn render(demo: &Demo, show_debug: bool) {
     let mut canvas = Canvas::new(WIDTH, HEIGHT);
 
     canvas.text(0, 0, "Weave button-to-panel demo");
     canvas.text(
         0,
         1,
-        "[space] toggle  [b] button  [p] panel  [m] reduced motion  [v vx vy] fling  [q] quit",
+        "[space] toggle  [b] button  [p] panel  [m] reduced motion  [v vx vy] fling  [d] debug  [q] quit",
     );
     canvas.hline(3, 0, WIDTH as isize - 1, '-');
 
     demo.draw(&mut canvas);
+
+    if show_debug {
+        let report = demo.debug_report();
+        for (index, line) in report.lines().enumerate() {
+            canvas.text(0, HEIGHT as isize - 6 + index as isize, line);
+        }
+    }
 
     canvas.text(0, HEIGHT as isize - 1, &demo.status());
 

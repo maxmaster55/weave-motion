@@ -18,6 +18,10 @@ std = ["weave-core/std"]
 [dependencies]
 weave-core = { workspace = true, default-features = false }
 
+[[bench]]
+name = "morph"
+harness = false
+
 [lints.rust]
 missing_docs = "warn"
 unsafe_code = "forbid"

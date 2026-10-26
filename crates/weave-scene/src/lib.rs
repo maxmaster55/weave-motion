@@ -13,6 +13,7 @@
 //! | [`id`] | stable element identity ([`ElementId`], [`ElementRegistry`]) |
 //! | [`transform`] | FLIP transforms and transition modes |
 //! | [`choreography`] | dependencies between the parts of a transition |
+//! | [`debug`] | human readable descriptions of the scene state |
 //! | [`scene`] | the [`Scene`] itself |
 //!
 //! ## Rules
@@ -48,11 +49,13 @@
 extern crate alloc;
 
 mod choreography;
+mod debug;
 mod id;
 mod scene;
 mod transform;
 
 pub use choreography::{Choreographer, Cue, Direction, Gate};
+pub use debug::{describe as describe_snapshot, report as debug_report, DebugEntry};
 pub use id::{ElementId, ElementRegistry};
 pub use scene::{Presentation, Scene, SceneSnapshot};
 pub use transform::{ElementTransition, Flip, Transform, TransitionMode};

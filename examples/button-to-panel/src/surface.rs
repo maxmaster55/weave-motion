@@ -1,5 +1,7 @@
 //! The demo scene: a pill button that expands into a panel.
 
+use std::string::String;
+
 use weave_core::MotionPolicy;
 use weave_demo_support::Canvas;
 use weave_geometry::{Radii, Rect, Shape};
@@ -231,6 +233,11 @@ impl Demo {
                 canvas.set_clip(None);
             }
         }
+    }
+
+    /// A human readable report of the scene state.
+    pub fn debug_report(&self) -> String {
+        self.scene.debug_report()
     }
 
     /// A one line summary of the current state.

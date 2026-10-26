@@ -26,6 +26,10 @@ libm = ["dep:libm"]
 # library's intrinsics are used instead.
 libm = { version = "0.2", optional = true }
 
+[[bench]]
+name = "springs"
+harness = false
+
 [lints.rust]
 missing_docs = "warn"
 unsafe_code = "forbid"
