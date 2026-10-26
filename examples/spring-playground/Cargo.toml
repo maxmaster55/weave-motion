@@ -11,6 +11,7 @@ publish = false
 
 [dependencies]
 weave-core = { workspace = true, features = ["std"] }
+weave-demo-support = { path = "../demo-support" }
 
 [lints.rust]
 missing_docs = "warn"

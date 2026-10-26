@@ -22,6 +22,7 @@ name = "spring-playground"
 version = "0.1.0"
 dependencies = [
  "weave-core",
+ "weave-demo-support",
 ]
 
 [[package]]
@@ -30,6 +31,10 @@ version = "0.1.0"
 dependencies = [
  "libm",
 ]
+
+[[package]]
+name = "weave-demo-support"
+version = "0.1.0"
 
 [[package]]
 name = "weave-geometry"

@@ -176,6 +176,16 @@ impl MotionEngine {
         self.scheduler.value(id)
     }
 
+    /// The current value of the animation registered under `key`.
+    pub fn value_by_key(&self, key: &str) -> Option<ValueSnapshot> {
+        self.scheduler.value_by_key(key)
+    }
+
+    /// The identifier of the animation registered under `key`.
+    pub fn id_by_key(&self, key: &str) -> Option<AnimationId> {
+        self.scheduler.id_by_key(key)
+    }
+
     /// The current value of an animation, as a scalar.
     pub fn value_f64(&self, id: AnimationId) -> Option<f64> {
         self.value(id).and_then(|value| value.as_scalar())

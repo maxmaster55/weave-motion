@@ -4,6 +4,7 @@ members = [
     "crates/weave-core",
     "crates/weave-geometry",
     "crates/weave-scene",
+    "examples/demo-support",
     "examples/spring-playground",
     "examples/button-to-panel",
 ]
@@ -15,6 +16,7 @@ default-members = [
     "crates/weave-core",
     "crates/weave-geometry",
     "crates/weave-scene",
+    "examples/demo-support",
     "examples/spring-playground",
     "examples/button-to-panel",
 ]
