@@ -8,7 +8,7 @@ use alloc::collections::BTreeMap;
 use wasm_bindgen::prelude::*;
 use web_sys::{Document, Element, HtmlElement};
 
-use weave_scene::SceneSnapshot;
+use weave_scene::{MotionRenderer, SceneSnapshot};
 
 use crate::style::DomStyle;
 
@@ -25,6 +25,16 @@ pub struct DomRenderer {
     document: Document,
     elements: BTreeMap<u64, HtmlElement>,
     frame: u32,
+}
+
+impl MotionRenderer for DomRenderer {
+    fn present(&mut self, snapshot: &SceneSnapshot) {
+        DomRenderer::present(self, snapshot);
+    }
+
+    fn schedule_frame(&mut self) {
+        // Frame scheduling is the host's responsibility.
+    }
 }
 
 impl DomRenderer {

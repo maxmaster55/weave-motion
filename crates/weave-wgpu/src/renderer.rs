@@ -9,6 +9,7 @@ use bytemuck::{Pod, Zeroable};
 use wgpu::util::DeviceExt;
 
 use crate::draw_list::DrawList;
+use weave_scene::MotionRenderer;
 
 /// The WGSL source of the surface shader.
 pub const SHADER: &str = r#"
@@ -144,6 +145,7 @@ pub struct WgpuRenderer {
     width: u32,
     height: u32,
     capacity: u64,
+    draw_list: Option<DrawList>,
 }
 
 impl WgpuRenderer {
@@ -283,6 +285,7 @@ impl WgpuRenderer {
             width,
             height,
             capacity,
+            draw_list: None,
         })
     }
 
@@ -381,6 +384,18 @@ impl WgpuRenderer {
         &self.device
     }
 
+    /// The draw list that was last presented.
+    pub fn draw_list(&self) -> Option<&DrawList> {
+        self.draw_list.as_ref()
+    }
+
+    /// Renders the last presented draw list into `target`.
+    pub fn render_presented(&mut self, target: &wgpu::TextureView) {
+        if let Some(list) = self.draw_list.clone() {
+            self.render(&list, target);
+        }
+    }
+
     fn upload(&mut self, list: &DrawList) {
         let uniforms = Uniforms {
             viewport: [list.width.max(1.0) as f32, list.height.max(1.0) as f32],
@@ -437,6 +452,17 @@ impl WgpuRenderer {
             self.queue
                 .write_buffer(&self.instance_buffer, 0, bytemuck::cast_slice(&instances));
         }
+    }
+}
+
+impl MotionRenderer for WgpuRenderer {
+    fn present(&mut self, snapshot: &weave_scene::SceneSnapshot) {
+        self.draw_list = Some(DrawList::from_snapshot(snapshot));
+    }
+
+    fn schedule_frame(&mut self) {
+        // Frame scheduling is the responsibility of the host: the engine
+        // reports `needs_frame`, the host calls `render`.
     }
 }
 

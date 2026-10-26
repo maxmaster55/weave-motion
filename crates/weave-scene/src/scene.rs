@@ -181,6 +181,16 @@ impl Scene {
         self.registry.get(key)
     }
 
+    /// Starts a shared-element transition.
+    ///
+    /// The element keeps its identity and its content while a FLIP
+    /// transform carries it from the previous bounds to `destination`. This
+    /// is the primitive behind a button that becomes a panel header, a
+    /// card that becomes a detail screen, or a tab indicator that slides.
+    pub fn shared_transition(&mut self, key: &str, destination: Rect) -> ElementId {
+        self.layout_with_mode(key, destination, TransitionMode::Flip)
+    }
+
     /// Declares the destination bounds of an element.
     ///
     /// The first call places the element without animating it. Later calls

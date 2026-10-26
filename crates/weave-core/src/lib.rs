@@ -55,7 +55,6 @@ mod engine;
 mod error;
 mod math;
 mod policy;
-mod renderer;
 mod scheduler;
 mod snapshot;
 mod spring;
@@ -69,7 +68,6 @@ pub use clock::{MotionClock, Tick, TimeGapPolicy};
 pub use engine::MotionEngine;
 pub use error::SpringError;
 pub use policy::MotionPolicy;
-pub use renderer::MotionRenderer;
 pub use scheduler::{
     AnimatedValue, AnimationEvent, AnimationId, AnimationKind, AnimationSnapshot, MotionSnapshot,
     Scheduler,

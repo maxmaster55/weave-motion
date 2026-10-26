@@ -62,3 +62,16 @@ pub use transform::{ElementTransition, Flip, Transform, TransitionMode};
 
 /// Version of the Weave engine this crate belongs to.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The contract every rendering adapter implements.
+///
+/// Adapters receive an immutable snapshot of the presentation state and draw
+/// it. The engine never pushes imperative per-property mutations into a
+/// renderer, which keeps the renderer replaceable and makes a frame
+/// reproducible.
+pub trait MotionRenderer {
+    /// Draws the given snapshot.
+    fn present(&mut self, snapshot: &SceneSnapshot);
+    /// Asks the host to schedule another frame.
+    fn schedule_frame(&mut self);
+}
