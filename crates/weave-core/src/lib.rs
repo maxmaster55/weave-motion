@@ -13,6 +13,10 @@
 //! | [`value`] | [`Animated<T>`]: a spring-driven property of any interpolable type |
 //! | [`tween`] | fixed-duration tweens and easing curves |
 //! | [`tokens`] | named motion presets |
+//! | [`clock`] | the shared monotonic clock and its gap policies |
+//! | [`policy`] | accessibility policy (full / reduced / off motion) |
+//! | [`scheduler`] | the animation registry and frame scheduler |
+//! | [`engine`] | the application facing [`MotionEngine`] façade |
 //! | [`snapshot`] | renderer-agnostic value snapshots |
 //!
 //! ## Design rules
@@ -46,8 +50,12 @@
 extern crate alloc;
 
 mod animatable;
+mod clock;
+mod engine;
 mod error;
 mod math;
+mod policy;
+mod scheduler;
 mod snapshot;
 mod spring;
 mod tokens;
@@ -56,7 +64,14 @@ mod types;
 mod value;
 
 pub use animatable::Animatable;
+pub use clock::{MotionClock, Tick, TimeGapPolicy};
+pub use engine::MotionEngine;
 pub use error::SpringError;
+pub use policy::MotionPolicy;
+pub use scheduler::{
+    AnimatedValue, AnimationEvent, AnimationId, AnimationKind, AnimationSnapshot, MotionSnapshot,
+    Scheduler,
+};
 pub use snapshot::ValueSnapshot;
 pub use spring::{solve, Spring, SpringConfig, DEFAULT_POSITION_EPSILON, DEFAULT_VELOCITY_EPSILON};
 pub use tokens::{MotionPreset, MotionToken};
