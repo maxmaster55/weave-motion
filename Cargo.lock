@@ -919,6 +919,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "weave-web"
+version = "0.1.0"
+dependencies = [
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "weave-core",
+ "weave-geometry",
+ "weave-scene",
+ "web-sys",
+]
+
+[[package]]
 name = "weave-wgpu"
 version = "0.1.0"
 dependencies = [
