@@ -114,13 +114,9 @@
 
           doCheck = true;
 
-          installPhase = ''
-            runHook preInstall
-            mkdir -p $out/bin
-            install -Dm755 target/release/spring-playground $out/bin/spring-playground
-            install -Dm755 target/release/button-to-panel $out/bin/button-to-panel
-            runHook postInstall
-          '';
+          # The default `cargoInstallHook` puts every executable of the
+          # release profile into `$out/bin`, which is exactly the two demos
+          # (`spring-playground` and `button-to-panel`).
 
           # The demos are pure computation; nothing is dlopen'ed at build time.
           dontFixup = true;
