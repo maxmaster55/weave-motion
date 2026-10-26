@@ -10,10 +10,11 @@ members = [
     "examples/spring-playground",
     "examples/button-to-panel",
 ]
-# `default-members` keeps the "portable core" buildable without any optional
-# adapter toolchains (GPU / wasm). Add adapters explicitly when needed:
-#   cargo build -p weave-wgpu
-#   cargo build -p weave-web --target wasm32-unknown-unknown
+# The adapter crates are members of the workspace, but their heavy
+# dependencies are feature gated: a plain `cargo build` never pulls in the
+# GPU stack or the wasm bindings. Enable them explicitly when needed:
+#   cargo build -p weave-wgpu --features wgpu
+#   cargo build -p weave-web --features web --target wasm32-unknown-unknown
 default-members = [
     "crates/weave-core",
     "crates/weave-geometry",
