@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/weave-core",
+    "crates/weaver-motion",
     "crates/weave-geometry",
     "crates/weave-scene",
     "crates/weave-wgpu",
@@ -16,7 +16,7 @@ members = [
 #   cargo build -p weave-wgpu --features wgpu
 #   cargo build -p weave-web --features web --target wasm32-unknown-unknown
 default-members = [
-    "crates/weave-core",
+    "crates/weaver-motion",
     "crates/weave-geometry",
     "crates/weave-scene",
     "crates/weave-wgpu",
@@ -38,13 +38,13 @@ categories = ["gui", "no-std"]
 
 # Internal crates are declared with BOTH `path` and `version` so that:
 #   * local development works from a checkout, and
-#   * `cargo publish` / `cargo add weave-core` from crates.io works unchanged.
+#   * `cargo publish` / `cargo add weaver-motion` from crates.io works unchanged.
 # Consumers in other projects may depend on them by path, git or registry.
 [workspace.dependencies]
 # `default-features = false` is declared *here* (not in the member crates) so
 # that downstream crates can opt into `std` explicitly without relying on
 # cargo's `default-features` override, which needs Cargo >= 1.99.
-weave-core = { version = "0.1.0", path = "crates/weave-core", default-features = false }
+weaver-motion = { version = "0.1.0", path = "crates/weaver-motion", default-features = false }
 weave-geometry = { version = "0.1.0", path = "crates/weave-geometry", default-features = false }
 weave-scene = { version = "0.1.0", path = "crates/weave-scene", default-features = false }
 

@@ -1,7 +1,7 @@
 //! Rounded rectangles and the corner radii they carry.
 
 use crate::rect::Rect;
-use weave_core::Animatable;
+use weaver_motion::Animatable;
 
 /// The corner radii of a rounded rectangle.
 ///

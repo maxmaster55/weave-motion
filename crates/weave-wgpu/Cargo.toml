@@ -19,7 +19,7 @@ default = []
 wgpu = ["dep:wgpu", "dep:bytemuck"]
 
 [dependencies]
-weave-core = { workspace = true, features = ["std"] }
+weaver-motion = { workspace = true, features = ["std"] }
 weave-geometry = { workspace = true, features = ["std"] }
 weave-scene = { workspace = true, features = ["std"] }
 wgpu = { version = "0.20", optional = true }

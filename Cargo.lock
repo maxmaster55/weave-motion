@@ -75,10 +75,10 @@ checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 name = "button-to-panel"
 version = "0.1.0"
 dependencies = [
- "weave-core",
  "weave-demo-support",
  "weave-geometry",
  "weave-scene",
+ "weaver-motion",
 ]
 
 [[package]]
@@ -731,8 +731,8 @@ dependencies = [
 name = "spring-playground"
 version = "0.1.0"
 dependencies = [
- "weave-core",
  "weave-demo-support",
+ "weaver-motion",
 ]
 
 [[package]]
@@ -893,13 +893,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "weave-core"
-version = "0.1.0"
-dependencies = [
- "libm",
-]
-
-[[package]]
 name = "weave-demo-support"
 version = "0.1.0"
 
@@ -907,15 +900,15 @@ version = "0.1.0"
 name = "weave-geometry"
 version = "0.1.0"
 dependencies = [
- "weave-core",
+ "weaver-motion",
 ]
 
 [[package]]
 name = "weave-scene"
 version = "0.1.0"
 dependencies = [
- "weave-core",
  "weave-geometry",
+ "weaver-motion",
 ]
 
 [[package]]
@@ -924,9 +917,9 @@ version = "0.1.0"
 dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
- "weave-core",
  "weave-geometry",
  "weave-scene",
+ "weaver-motion",
  "web-sys",
 ]
 
@@ -935,10 +928,17 @@ name = "weave-wgpu"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
- "weave-core",
  "weave-geometry",
  "weave-scene",
+ "weaver-motion",
  "wgpu",
+]
+
+[[package]]
+name = "weaver-motion"
+version = "0.1.0"
+dependencies = [
+ "libm",
 ]
 
 [[package]]

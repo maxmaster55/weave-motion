@@ -1,6 +1,6 @@
 //! Axis aligned rectangles.
 
-use weave_core::{Animatable, ValueSnapshot};
+use weaver_motion::{Animatable, ValueSnapshot};
 
 /// An axis aligned rectangle, described by its origin and its size.
 ///
@@ -181,14 +181,14 @@ impl Animatable for Rect {
         value: Self,
         velocity: Self,
         target: Self,
-        config: &weave_core::SpringConfig,
+        config: &weaver_motion::SpringConfig,
         dt: f64,
     ) -> (Self, Self) {
-        let (x, vx) = weave_core::solve(config, value.x, velocity.x, target.x, dt);
-        let (y, vy) = weave_core::solve(config, value.y, velocity.y, target.y, dt);
-        let (width, vw) = weave_core::solve(config, value.width, velocity.width, target.width, dt);
+        let (x, vx) = weaver_motion::solve(config, value.x, velocity.x, target.x, dt);
+        let (y, vy) = weaver_motion::solve(config, value.y, velocity.y, target.y, dt);
+        let (width, vw) = weaver_motion::solve(config, value.width, velocity.width, target.width, dt);
         let (height, vh) =
-            weave_core::solve(config, value.height, velocity.height, target.height, dt);
+            weaver_motion::solve(config, value.height, velocity.height, target.height, dt);
 
         (
             Rect {
@@ -207,7 +207,7 @@ impl Animatable for Rect {
     }
 
     fn snapshot(self) -> ValueSnapshot {
-        ValueSnapshot::Quad(weave_core::Vec4::new(
+        ValueSnapshot::Quad(weaver_motion::Vec4::new(
             self.x,
             self.y,
             self.width,

@@ -1,7 +1,7 @@
 //! Transforms and the FLIP technique.
 
 use crate::id::ElementId;
-use weave_core::{Animatable, ValueSnapshot};
+use weaver_motion::{Animatable, ValueSnapshot};
 use weave_geometry::Rect;
 
 /// An affine transform restricted to translation and uniform-per-axis scale.
@@ -99,17 +99,17 @@ impl Animatable for Transform {
         value: Self,
         velocity: Self,
         target: Self,
-        config: &weave_core::SpringConfig,
+        config: &weaver_motion::SpringConfig,
         dt: f64,
     ) -> (Self, Self) {
-        let (translate_x, vx) = weave_core::solve(
+        let (translate_x, vx) = weaver_motion::solve(
             config,
             value.translate_x,
             velocity.translate_x,
             target.translate_x,
             dt,
         );
-        let (translate_y, vy) = weave_core::solve(
+        let (translate_y, vy) = weaver_motion::solve(
             config,
             value.translate_y,
             velocity.translate_y,
@@ -117,9 +117,9 @@ impl Animatable for Transform {
             dt,
         );
         let (scale_x, sx) =
-            weave_core::solve(config, value.scale_x, velocity.scale_x, target.scale_x, dt);
+            weaver_motion::solve(config, value.scale_x, velocity.scale_x, target.scale_x, dt);
         let (scale_y, sy) =
-            weave_core::solve(config, value.scale_y, velocity.scale_y, target.scale_y, dt);
+            weaver_motion::solve(config, value.scale_y, velocity.scale_y, target.scale_y, dt);
 
         (
             Transform {
@@ -138,7 +138,7 @@ impl Animatable for Transform {
     }
 
     fn snapshot(self) -> ValueSnapshot {
-        ValueSnapshot::Quad(weave_core::Vec4::new(
+        ValueSnapshot::Quad(weaver_motion::Vec4::new(
             self.translate_x,
             self.translate_y,
             self.scale_x,

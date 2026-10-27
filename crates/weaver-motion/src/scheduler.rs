@@ -194,12 +194,12 @@ struct Entry {
 /// Registry of animations plus the frame scheduler that drives them.
 ///
 /// ```
-/// use weave_core::{MotionToken, Scheduler, ValueSnapshot};
+/// use weaver_motion::{MotionToken, Scheduler, ValueSnapshot};
 ///
 /// let mut scheduler = Scheduler::new();
 /// scheduler.insert(
 ///     Some("scale".into()),
-///     Box::new(weave_core::Animated::new(
+///     Box::new(weaver_motion::Animated::new(
 ///         1.0_f64,
 ///         1.06,
 ///         MotionToken::FastSpatial.spring_config().unwrap(),

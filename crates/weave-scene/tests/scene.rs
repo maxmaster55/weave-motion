@@ -1,6 +1,6 @@
 //! Tests for the scene layer.
 
-use weave_core::MotionPolicy;
+use weaver_motion::MotionPolicy;
 use weave_geometry::{Rect, Shape};
 use weave_scene::{Cue, Direction, Gate, Scene, TransitionMode};
 

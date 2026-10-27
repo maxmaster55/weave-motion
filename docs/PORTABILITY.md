@@ -8,9 +8,9 @@ consume the engine from another project.
 
 | Crate | Dependencies | Purpose |
 |---|---|---|
-| `weave-core` | none (`libm` only for `no_std`) | springs, tweens, tokens, clock, policy, scheduler, engine |
-| `weave-geometry` | `weave-core` | rectangles, rounded shapes, Bézier paths, morphing, caching |
-| `weave-scene` | `weave-core`, `weave-geometry` | stable identity, FLIP, choreography |
+| `weaver-motion` | none (`libm` only for `no_std`) | springs, tweens, tokens, clock, policy, scheduler, engine |
+| `weave-geometry` | `weaver-motion` | rectangles, rounded shapes, Bézier paths, morphing, caching |
+| `weave-scene` | `weaver-motion`, `weave-geometry` | stable identity, FLIP, choreography |
 | `weave-wgpu` | `weave-*` (+ `wgpu` behind a feature) | GPU adapter |
 | `weave-web` | `weave-*` (+ `wasm-bindgen` behind a feature) | DOM adapter |
 
@@ -24,16 +24,16 @@ Every crate carries both a `path` and a `version`, so all of these work:
 
 ```toml
 # 1. from a checkout next to your project
-weave-core = { path = "../weave_engine/crates/weave-core" }
+weaver-motion = { path = "../weaver-motion/crates/weaver-motion" }
 
 # 2. from git, without publishing
-weave-core = { git = "https://github.com/weave-motion/weave", package = "weave-core" }
+weaver-motion = { git = "https://github.com/weave-motion/weave", package = "weaver-motion" }
 
 # 3. from crates.io, once published
-weave-core = "0.1"
+weaver-motion = "0.1"
 ```
 
-Only `weave-core` is needed for the physics. `weave-geometry` and
+Only `weaver-motion` is needed for the physics. `weave-geometry` and
 `weave-scene` add shapes and layout transitions. The adapters are
 optional.
 
@@ -41,10 +41,10 @@ optional.
 
 ```toml
 # the default: std, everything enabled
-weave-core = "0.1"
+weaver-motion = "0.1"
 
 # no_std: for embedded targets, custom engines or wasm without std shims
-weave-core = { version = "0.1", default-features = false, features = ["libm"] }
+weaver-motion = { version = "0.1", default-features = false, features = ["libm"] }
 ```
 
 | Feature | Crates | Meaning |
@@ -61,7 +61,7 @@ missing.
 ## Portability rules the code follows
 
 1. **No wall clock.** The engine only ever sees monotonic timestamps that
-   the host provides. `weave_core::MotionClock` decides what a large gap
+   the host provides. `weaver_motion::MotionClock` decides what a large gap
    means (fast-forward, freeze or snap).
 2. **No rendering dependency in the core.** The core knows about numbers,
    not pixels: it never imports `wgpu`, `web-sys` or a UI framework.
@@ -120,6 +120,6 @@ work:
 | `weave-web` | a browser (`wasm32-unknown-unknown`) |
 
 If your platform needs something else, implement
-`weave_core::MotionRenderer` and turn a scene snapshot into whatever your
+`weaver_motion::MotionRenderer` and turn a scene snapshot into whatever your
 renderer draws. The `weave-wgpu` draw list (`weave_wgpu::DrawList`) is a
 good template: it is pure data and needs no GPU.

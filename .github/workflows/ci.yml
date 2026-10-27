@@ -40,7 +40,7 @@ jobs:
       - name: Test
         run: cargo test --workspace
       - name: Check the `no_std` build of the core
-        run: cargo build -p weave-core --no-default-features --features libm
+        run: cargo build -p weaver-motion --no-default-features --features libm
       - name: Doc
         run: cargo doc --workspace --no-deps
 

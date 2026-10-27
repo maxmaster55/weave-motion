@@ -18,7 +18,7 @@ Use when the user asks to implement, extend, optimize, port, or apply **Weave**,
 ## Agent workflow
 
 1. Inspect the actual repository, dependencies, rendering stack, input and layout APIs; state findings and integration boundaries. Do not fabricate existing modules.
-2. Design the minimal standalone `weave-core` crate. Implement spring state, target retargeting, exact-time update, settling, tokens and scheduling with tests.
+2. Design the minimal standalone `weaver-motion` crate. Implement spring state, target retargeting, exact-time update, settling, tokens and scheduling with tests.
 3. Build a runnable demonstration with interactive retargeting before adding complicated geometry.
 4. Implement parametric rounded-rectangle morphs and a pill-to-panel demo. Move to compatible Bézier path morphs only after stable output.
 5. Add shared IDs, FLIP bounds transitions, choreography and content reveal as separate concerns.

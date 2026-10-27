@@ -8,7 +8,7 @@ Application state + Layout destinations + Input
         identity / shared element / FLIP / choreography
                          |
                          v
-                   weave-core
+                   weaver-motion
         spring / tween / scheduler / values / tokens
                          |
                          v
@@ -24,7 +24,7 @@ Application state + Layout destinations + Input
 
 ## The layers
 
-### `weave-core` — the laws of motion
+### `weaver-motion` — the laws of motion
 
 Nothing but numbers and time.
 

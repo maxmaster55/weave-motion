@@ -10,7 +10,7 @@ authors.workspace = true
 publish = false
 
 [dependencies]
-weave-core = { workspace = true, features = ["std"] }
+weaver-motion = { workspace = true, features = ["std"] }
 weave-geometry = { workspace = true, features = ["std"] }
 weave-scene = { workspace = true, features = ["std"] }
 weave-demo-support = { path = "../demo-support" }

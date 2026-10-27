@@ -1,6 +1,6 @@
 //! Tests for the geometry primitives and their use with the engine.
 
-use weave_core::{Animated, MotionToken, SpringConfig};
+use weaver_motion::{Animated, MotionToken, SpringConfig};
 use weave_geometry::{Extrapolation, Morph, Radii, Rect, RoundedRect, Shape};
 
 #[test]

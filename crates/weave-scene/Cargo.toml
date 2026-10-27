@@ -13,10 +13,10 @@ readme = "README.md"
 
 [features]
 default = ["std"]
-std = ["weave-core/std", "weave-geometry/std"]
+std = ["weaver-motion/std", "weave-geometry/std"]
 
 [dependencies]
-weave-core = { workspace = true, default-features = false }
+weaver-motion = { workspace = true, default-features = false }
 weave-geometry = { workspace = true, default-features = false }
 
 [lints.rust]

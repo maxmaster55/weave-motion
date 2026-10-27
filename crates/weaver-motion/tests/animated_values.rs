@@ -1,6 +1,6 @@
 //! Tests for the generic animated values.
 
-use weave_core::{Animated, MotionToken, SpringConfig, Vec2, Vec4};
+use weaver_motion::{Animated, MotionToken, SpringConfig, Vec2, Vec4};
 
 #[test]
 fn vector_springs_move_each_component() {
@@ -59,7 +59,7 @@ fn quad_values_are_supported() {
 
 #[test]
 fn interpolation_helpers_behave() {
-    use weave_core::Animatable;
+    use weaver_motion::Animatable;
 
     assert_eq!(Animatable::lerp(0.0_f64, 10.0_f64, 0.25), 2.5);
     assert_eq!(

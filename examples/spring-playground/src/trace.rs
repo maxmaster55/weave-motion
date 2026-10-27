@@ -1,6 +1,6 @@
 //! Recorded traces of a spring simulation.
 
-use weave_core::{Spring, SpringConfig};
+use weaver_motion::{Spring, SpringConfig};
 
 /// What happened when a spring was retargeted mid-flight.
 #[derive(Clone, Copy, Debug)]
@@ -146,7 +146,7 @@ pub fn simulate_with_retarget(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use weave_core::MotionToken;
+    use weaver_motion::MotionToken;
 
     fn config() -> SpringConfig {
         MotionToken::DefaultSpatial.spring_config().unwrap()

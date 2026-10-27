@@ -5,7 +5,7 @@
 //! of typed convenience methods.
 //!
 //! ```
-//! use weave_core::{MotionEngine, MotionToken};
+//! use weaver_motion::{MotionEngine, MotionToken};
 //!
 //! let mut engine = MotionEngine::new();
 //! let scale = engine.spring("toolbar.create.scale", 1.0, MotionToken::FastSpatial);

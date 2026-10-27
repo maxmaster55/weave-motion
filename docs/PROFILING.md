@@ -4,7 +4,7 @@ The numbers below were measured on the reference machine with the
 dependency free benchmarks that ship with the crates:
 
 ```sh
-cargo bench -p weave-core
+cargo bench -p weaver-motion
 cargo bench -p weave-geometry
 ```
 

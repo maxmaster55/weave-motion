@@ -14,7 +14,7 @@ use crate::spring::SpringConfig;
 /// * the value reports when it settled so schedulers can idle.
 ///
 /// ```
-/// use weave_core::{Animated, SpringConfig, Vec2};
+/// use weaver_motion::{Animated, SpringConfig, Vec2};
 ///
 /// let config = SpringConfig::unit_mass(300.0, 0.8)?;
 /// let mut scale = Animated::new(Vec2::ONE, Vec2::splat(1.06), config);
@@ -24,7 +24,7 @@ use crate::spring::SpringConfig;
 ///
 /// scale.set_target(Vec2::ONE);
 /// assert_eq!(scale.velocity(), velocity);
-/// # Ok::<(), weave_core::SpringError>(())
+/// # Ok::<(), weaver_motion::SpringError>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Animated<T: Animatable> {

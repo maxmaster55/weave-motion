@@ -6,7 +6,7 @@
 
 #[cfg(all(not(feature = "std"), not(feature = "libm")))]
 compile_error!(
-    "`weave-core` built without the `std` feature needs the `libm` feature for \
+    "`weaver-motion` built without the `std` feature needs the `libm` feature for \
      floating point math: use `--no-default-features --features libm`"
 );
 

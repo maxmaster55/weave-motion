@@ -11,7 +11,7 @@ use crate::types::{Vec2, Vec4};
 /// touching the engine.
 ///
 /// ```
-/// use weave_core::Animatable;
+/// use weaver_motion::Animatable;
 ///
 /// let a = 0.0_f64;
 /// let b = 10.0_f64;

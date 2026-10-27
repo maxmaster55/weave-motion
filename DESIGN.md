@@ -47,7 +47,7 @@ Application state + Layout destinations + Input
              identity / shared element / FLIP
                         |
                         v
-               weave-core (required)
+               weaver-motion (required)
     spring / tween / scheduler / values / tokens
                         |
                         v
@@ -63,7 +63,7 @@ Application state + Layout destinations + Input
 
 ### Crates
 
-**weave-core:** pure library with `AnimationId`, `Animated<T>`, `Spring`, `Tween`, `MotionToken`, `MotionClock`, `Scheduler`, `AnimationSnapshot`, `AnimationPolicy`. Start with f64 scalars and Vec2; make typed interpolation extensible. Avoid runtime renderer coupling.
+**weaver-motion:** pure library with `AnimationId`, `Animated<T>`, `Spring`, `Tween`, `MotionToken`, `MotionClock`, `Scheduler`, `AnimationSnapshot`, `AnimationPolicy`. Start with f64 scalars and Vec2; make typed interpolation extensible. Avoid runtime renderer coupling.
 
 **weave-geometry:** normalized geometry types, rounded-rects, rounded polygons, cubic paths, contour correspondence, sampling and validation. CPU-first; tessellation as an adapter concern.
 

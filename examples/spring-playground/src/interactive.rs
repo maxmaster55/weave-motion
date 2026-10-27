@@ -8,7 +8,7 @@ use std::io::{BufRead, Write};
 use std::sync::mpsc::{channel, Receiver};
 use std::thread;
 
-use weave_core::{AnimationId, MotionEngine, MotionPolicy, MotionToken};
+use weaver_motion::{AnimationId, MotionEngine, MotionPolicy, MotionToken};
 use weave_demo_support::ansi;
 use weave_demo_support::{Canvas, DemoClock};
 

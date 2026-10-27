@@ -34,7 +34,7 @@ pub struct Tick {
 /// A monotonic clock shared by every animation of an application.
 ///
 /// ```
-/// use weave_core::MotionClock;
+/// use weaver_motion::MotionClock;
 ///
 /// let mut clock = MotionClock::new();
 /// assert_eq!(clock.tick(0.0).dt, 0.0, "the first tick has no predecessor");

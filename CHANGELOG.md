@@ -11,7 +11,7 @@ independent motion system for UI applications.
 
 ### Added
 
-#### Core (`weave-core`)
+#### Core (`weaver-motion`)
 
 * Exact-time damped spring solver: the closed-form solution of
   `m x'' + c x' + k(x - target) = 0`, with underdamped, critically damped

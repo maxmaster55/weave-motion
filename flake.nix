@@ -25,7 +25,7 @@
       # ---------------------------------------------------------------------------
       # Native dependencies.
       #
-      # The portable core (weave-core / weave-geometry / weave-scene) and the
+      # The portable core (weaver-motion / weave-geometry / weave-scene) and the
       # terminal demos need NOTHING from this list. These packages are only
       # required by the optional adapters:
       #   * weave-wgpu  -> vulkan loader, libGL, libxkbcommon, X11/wayland clients

@@ -18,7 +18,7 @@ default = []
 web = ["dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:web-sys"]
 
 [dependencies]
-weave-core = { workspace = true, features = ["std"] }
+weaver-motion = { workspace = true, features = ["std"] }
 weave-geometry = { workspace = true, features = ["std"] }
 weave-scene = { workspace = true, features = ["std"] }
 wasm-bindgen = { version = "0.2", optional = true }

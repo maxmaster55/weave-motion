@@ -17,7 +17,7 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use weave_core::{
+use weaver_motion::{
     Animated, AnimationId, MotionEngine, MotionPolicy, MotionSnapshot, MotionToken, SpringConfig,
 };
 use weave_geometry::{Morph, Radii, Rect, RoundedRect, Shape};

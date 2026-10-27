@@ -1,4 +1,4 @@
-//! # weave-core
+//! # weaver-motion
 //!
 //! Renderer-independent motion primitives for the Weave engine.
 //!
@@ -31,7 +31,7 @@
 //!    builds, works on `no_std` + `alloc`, and contains no `unsafe` code.
 //!
 //! ```
-//! use weave_core::{Animated, SpringConfig, Vec2};
+//! use weaver_motion::{Animated, SpringConfig, Vec2};
 //!
 //! let config = SpringConfig::unit_mass(300.0, 0.8)?;
 //! let mut scale = Animated::new(Vec2::ONE, Vec2::splat(1.06), config);
@@ -41,7 +41,7 @@
 //!
 //! scale.set_target(Vec2::ONE);
 //! assert_eq!(scale.velocity(), velocity);
-//! # Ok::<(), weave_core::SpringError>(())
+//! # Ok::<(), weaver_motion::SpringError>(())
 //! ```
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(unsafe_code)]

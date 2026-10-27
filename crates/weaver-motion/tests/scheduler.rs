@@ -1,11 +1,11 @@
 //! Tests for the scheduler and the engine façade.
 
-use weave_core::{
+use weaver_motion::{
     AnimationEvent, MotionEngine, MotionPolicy, MotionToken, Scheduler, ValueSnapshot, Vec2,
 };
 
-fn spring(value: f64, target: f64) -> Box<dyn weave_core::AnimatedValue> {
-    Box::new(weave_core::Animated::new(
+fn spring(value: f64, target: f64) -> Box<dyn weaver_motion::AnimatedValue> {
+    Box::new(weaver_motion::Animated::new(
         value,
         target,
         MotionToken::DefaultSpatial.spring_config().unwrap(),

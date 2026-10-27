@@ -1,5 +1,5 @@
 //! Deterministic samples for the README illustrations; no renderer required.
-use weave_core::{MotionToken, Spring};
+use weaver_motion::{MotionToken, Spring};
 use weave_geometry::{Radii, Rect, Shape};
 use weave_scene::Scene;
 

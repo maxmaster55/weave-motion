@@ -1,6 +1,6 @@
 //! Behavioural tests for the spring solver, written against the public API.
 
-use weave_core::{solve, Spring, SpringConfig};
+use weaver_motion::{solve, Spring, SpringConfig};
 
 fn config() -> SpringConfig {
     SpringConfig::unit_mass(300.0, 0.8).unwrap()

@@ -1,5 +1,5 @@
 [package]
-name = "weave-core"
+name = "weaver-motion"
 description = "Renderer-independent motion primitives: exact-time damped springs, tweens, motion tokens and a shared scheduler."
 version.workspace = true
 edition.workspace = true
@@ -18,7 +18,7 @@ default = ["std"]
 # required because the scheduler stores collections.
 std = []
 # Pure-Rust math for `no_std` builds:
-#   cargo build -p weave-core --no-default-features --features libm
+#   cargo build -p weaver-motion --no-default-features --features libm
 libm = ["dep:libm"]
 
 [dependencies]

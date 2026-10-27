@@ -7,7 +7,7 @@ use std::io::{BufRead, Write};
 use std::sync::mpsc::{channel, Receiver};
 use std::thread;
 
-use weave_core::MotionPolicy;
+use weaver_motion::MotionPolicy;
 use weave_demo_support::ansi;
 use weave_demo_support::{Canvas, DemoClock};
 

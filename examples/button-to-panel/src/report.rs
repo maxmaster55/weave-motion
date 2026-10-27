@@ -8,7 +8,7 @@
 //! It runs without a terminal, without input and without a GPU, so it can
 //! be part of a build.
 
-use weave_core::MotionPolicy;
+use weaver_motion::MotionPolicy;
 
 use crate::surface::{Demo, ICON, LABEL, SURFACE};
 

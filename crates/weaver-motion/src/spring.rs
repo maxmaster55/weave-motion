@@ -39,7 +39,7 @@ pub const DEFAULT_VELOCITY_EPSILON: f64 = 0.01;
 /// Physical parameters of a damped harmonic oscillator.
 ///
 /// ```
-/// use weave_core::SpringConfig;
+/// use weaver_motion::SpringConfig;
 ///
 /// let config = SpringConfig::new(1.0, 300.0, 0.8).unwrap();
 /// assert!(config.omega() > 0.0);
@@ -182,7 +182,7 @@ impl SpringConfig {
 /// # Examples
 ///
 /// ```
-/// use weave_core::{solve, SpringConfig};
+/// use weaver_motion::{solve, SpringConfig};
 ///
 /// let config = SpringConfig::unit_mass(300.0, 0.8).unwrap();
 /// let (value, velocity) = solve(&config, 0.0, 0.0, 1.0, 0.01);
@@ -245,7 +245,7 @@ pub fn solve(config: &SpringConfig, value: f64, velocity: f64, target: f64, dt: 
 /// animations look continuous.
 ///
 /// ```
-/// use weave_core::{Spring, SpringConfig};
+/// use weaver_motion::{Spring, SpringConfig};
 ///
 /// let config = SpringConfig::unit_mass(300.0, 0.8).unwrap();
 /// let mut spring = Spring::new(0.0, 1.0, config);

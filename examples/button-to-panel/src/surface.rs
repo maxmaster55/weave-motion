@@ -2,7 +2,7 @@
 
 use std::string::String;
 
-use weave_core::MotionPolicy;
+use weaver_motion::MotionPolicy;
 use weave_demo_support::Canvas;
 use weave_geometry::{Radii, Rect, Shape};
 use weave_scene::{Cue, Direction, Gate, Scene, SceneSnapshot};

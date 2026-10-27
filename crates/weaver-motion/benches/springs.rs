@@ -3,7 +3,7 @@
 //! Run it with:
 //!
 //! ```text
-//! cargo bench -p weave-core
+//! cargo bench -p weaver-motion
 //! ```
 //!
 //! The numbers are printed in a form that can be pasted into
@@ -12,7 +12,7 @@
 use std::hint::black_box;
 use std::time::Instant;
 
-use weave_core::{Animated, MotionToken, Scheduler, Spring, Vec2};
+use weaver_motion::{Animated, MotionToken, Scheduler, Spring, Vec2};
 
 const FRAMES: usize = 600;
 

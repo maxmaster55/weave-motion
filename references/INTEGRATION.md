@@ -46,4 +46,4 @@ Prefer implementation exposing immutable snapshots over pushing imperative per-p
 
 ## Naming
 
-**Weave** (engine), with tentative crates `weave-core`, `weave-geometry`, `weave-scene`, `weave-wgpu`. Exact crates.io names and trademarks are **not confirmed available**. Avoid creating/publicizing package names before checking the registry and legal context.
+**Weave** (engine), with tentative crates `weaver-motion`, `weave-geometry`, `weave-scene`, `weave-wgpu`. Exact crates.io names and trademarks are **not confirmed available**. Avoid creating/publicizing package names before checking the registry and legal context.

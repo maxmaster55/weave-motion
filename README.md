@@ -61,7 +61,7 @@ The dim line is the destination; the bright curve is the spring's position.
 Changing the target preserves position and velocity. A reversal can keep
 travelling briefly before turning around, just as momentum requires.
 
-All three previews use deterministic samples from `weave-core` and
+All three previews use deterministic samples from `weaver-motion` and
 `weave-scene`. They illustrate the engine's output; they are not recordings
 of the optional GPU or browser adapters.
 
@@ -104,14 +104,14 @@ From a local checkout:
 
 ```toml
 [dependencies]
-weave-core = { path = "../weave_engine/crates/weave-core" }
+weaver-motion = { path = "../weaver-motion/crates/weaver-motion" }
 ```
 
 Or use the Git repository, with GitHub access configured:
 
 ```toml
 [dependencies]
-weave-core = { git = "https://github.com/maxmaster55/weave-engine.git" }
+weaver-motion = { git = "https://github.com/maxmaster55/weave-engine.git" }
 ```
 
 Pin a reviewed commit with Cargo's `rev` option for reproducible builds.
@@ -119,9 +119,9 @@ The crates are prepared for registry publishing, but this README does not
 assume they have been published to crates.io.
 
 ```rust
-use weave_core::{Spring, SpringConfig};
+use weaver_motion::{Spring, SpringConfig};
 
-fn main() -> Result<(), weave_core::SpringError> {
+fn main() -> Result<(), weaver_motion::SpringError> {
     let config = SpringConfig::unit_mass(300.0, 0.8)?;
     let mut position = Spring::resting(0.0, config);
 
@@ -152,7 +152,7 @@ optional. See the [portability guide](docs/PORTABILITY.md).
 
 | Crate | Responsibility |
 | :--- | :--- |
-| [`weave-core`](crates/weave-core) | Exact-time springs, tweens, motion tokens, clock, scheduler, and motion policy |
+| [`weaver-motion`](crates/weaver-motion) | Exact-time springs, tweens, motion tokens, clock, scheduler, and motion policy |
 | [`weave-geometry`](crates/weave-geometry) | Rounded rectangles, Bézier correspondence, validated morphs, and caching |
 | [`weave-scene`](crates/weave-scene) | Stable identity, shared-element FLIP, bounds transitions, and choreography |
 | [`weave-wgpu`](crates/weave-wgpu) | Draw lists and an optional GPU renderer (`wgpu` feature) |

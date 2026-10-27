@@ -28,7 +28,7 @@ impl Easing {
     /// Maps a linear progress `t` in `[0, 1]` to an eased progress.
     ///
     /// ```
-    /// use weave_core::Easing;
+    /// use weaver_motion::Easing;
     ///
     /// assert_eq!(Easing::Linear.apply(0.25), 0.25);
     /// assert_eq!(Easing::EaseInOut.apply(0.0), 0.0);
@@ -202,7 +202,9 @@ impl<T: Animatable> Tween<T> {
 
     /// Linear progress in `[0, 1]`, before easing.
     pub fn progress(&self) -> f64 {
-        if self.config.duration <= 0.0 {
+        // Compare the deadline before subtracting delay: floating-point
+        // cancellation can otherwise leave a completed tween active forever.
+        if self.config.duration <= 0.0 || self.elapsed >= self.config.delay + self.config.duration {
             return 1.0;
         }
         let active = (self.elapsed - self.config.delay).max(0.0);
@@ -336,6 +338,15 @@ mod tests {
         assert_eq!(tween.progress(), 0.0);
     }
 
+    #[test]
+    fn delayed_tween_reaches_exact_rest_despite_deadline_rounding() {
+        let mut tween = Tween::new(0.0_f64, 1.0, TweenConfig::new(0.42).with_delay(0.03));
+        assert!(!tween.advance(2.0));
+        assert_eq!(tween.value(), 1.0);
+        assert_eq!(tween.progress(), 1.0);
+        assert!(tween.is_settled());
+        assert!(!tween.advance(0.016));
+    }
     #[test]
     fn tween_delay_is_respected() {
         let mut tween = Tween::new(0.0_f64, 1.0, TweenConfig::new(0.1).with_delay(0.05));
