@@ -14,6 +14,10 @@
 //! |---|---|---|
 //! | `weave_web::DomStyle` | no | the CSS of a presentation state |
 //! | `weave_web::DomRenderer` | yes | applies the styles to the DOM |
+//! | `weave_web::Motion` | no (exported to JS with `web`) | handle-based springs for JavaScript |
+//!
+//! `Motion` has a plain JavaScript twin in `js/weave.js`, so web apps can
+//! use the wasm build or no wasm at all with the same API.
 //!
 //! The style computation is pure string building, so it is covered by
 //! tests that run on any target.
@@ -36,8 +40,10 @@
 
 extern crate alloc;
 
+mod motion;
 mod style;
 
+pub use motion::{preset, Motion};
 pub use style::DomStyle;
 
 #[cfg(all(feature = "web", target_arch = "wasm32"))]

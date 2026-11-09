@@ -11,6 +11,10 @@ keywords.workspace = true
 categories.workspace = true
 readme = "README.md"
 
+[lib]
+# `cdylib` produces the .wasm loaded by `js/weave.js` (Weave.useEngine); `rlib` keeps it usable from Rust.
+crate-type = ["cdylib", "rlib"]
+
 [features]
 default = []
 # The DOM bindings are optional: the style computation works everywhere and
