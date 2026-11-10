@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
   workflow_dispatch:
 
@@ -86,4 +86,4 @@ jobs:
           cargo run -q -p weave-core --example js_fixture > /tmp/springs.json
           diff -q /tmp/springs.json js/test/fixtures/springs.json
       - name: Test
-        run: node --test js/test
+        run: node --test js/test/*.test.js

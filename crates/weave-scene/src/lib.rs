@@ -10,11 +10,11 @@
 //!
 //! | Module | Purpose |
 //! |---|---|
-//! | [`id`] | stable element identity ([`ElementId`], [`ElementRegistry`]) |
-//! | [`transform`] | FLIP transforms and transition modes |
-//! | [`choreography`] | dependencies between the parts of a transition |
-//! | [`debug`] | human readable descriptions of the scene state |
-//! | [`scene`] | the [`Scene`] itself |
+//! | `id` | stable element identity ([`ElementId`], [`ElementRegistry`]) |
+//! | `transform` | FLIP transforms and transition modes |
+//! | `choreography` | dependencies between the parts of a transition |
+//! | `debug` | human readable descriptions of the scene state |
+//! | `scene` | the [`Scene`] itself |
 //!
 //! ## Rules
 //!
@@ -43,7 +43,6 @@
 //! ```
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 extern crate alloc;

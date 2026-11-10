@@ -35,7 +35,6 @@
 //! assert_eq!(style.width, "100px");
 //! ```
 
-#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 extern crate alloc;

@@ -7,6 +7,7 @@
 //! same model.
 
 use crate::animatable::Animatable;
+use crate::math::abs;
 
 /// An easing curve.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -89,7 +90,7 @@ fn cubic_bezier_ease(t: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
     for _ in 0..8 {
         let (x, _) = sample(u);
         let dx = slope(u);
-        if dx.abs() < 1e-6 {
+        if abs(dx) < 1e-6 {
             break;
         }
         u -= (x - t) / dx;
@@ -100,12 +101,12 @@ fn cubic_bezier_ease(t: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
     }
 
     // Bisection fallback when Newton did not converge.
-    if (sample(u).0 - t).abs() > 1e-6 {
+    if abs(sample(u).0 - t) > 1e-6 {
         let (mut low, mut high) = (0.0_f64, 1.0_f64);
         u = t;
         for _ in 0..32 {
             let (x, _) = sample(u);
-            if (x - t).abs() < 1e-6 {
+            if abs(x - t) < 1e-6 {
                 break;
             }
             if x < t {

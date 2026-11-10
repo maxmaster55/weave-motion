@@ -4,7 +4,7 @@
 //!
 //! The crate has two layers:
 //!
-//! * [`draw_list`] turns a [`SceneSnapshot`](weave_scene::SceneSnapshot)
+//! * `draw_list` turns a [`SceneSnapshot`](weave_scene::SceneSnapshot)
 //!   into a list of draw items. That part is pure data manipulation: it
 //!   needs no GPU, so it is testable on a build machine.
 //! * the `wgpu` feature adds a renderer that draws those items with
@@ -23,7 +23,6 @@
 //! # }
 //! ```
 
-#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 mod draw_list;

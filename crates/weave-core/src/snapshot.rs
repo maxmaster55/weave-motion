@@ -1,5 +1,6 @@
 //! Renderer-agnostic snapshots of animated values.
 
+use crate::math::abs;
 use crate::types::{Vec2, Vec4};
 
 /// A description of an animated value, independent of its Rust type.
@@ -44,14 +45,12 @@ impl ValueSnapshot {
     /// The largest absolute component of the payload.
     pub fn magnitude(&self) -> f64 {
         match *self {
-            ValueSnapshot::Scalar(value) => value.abs(),
-            ValueSnapshot::Vector(value) => value.x.abs().max(value.y.abs()),
-            ValueSnapshot::Quad(value) => value
-                .x
-                .abs()
-                .max(value.y.abs())
-                .max(value.z.abs())
-                .max(value.w.abs()),
+            ValueSnapshot::Scalar(value) => abs(value),
+            ValueSnapshot::Vector(value) => abs(value.x).max(abs(value.y)),
+            ValueSnapshot::Quad(value) => abs(value.x)
+                .max(abs(value.y))
+                .max(abs(value.z))
+                .max(abs(value.w)),
         }
     }
 }

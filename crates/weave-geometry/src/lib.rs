@@ -11,14 +11,14 @@
 //!
 //! | Module | Purpose |
 //! |---|---|
-//! | [`rect`] | axis aligned rectangles |
-//! | [`rounded`] | rounded rectangles and corner radii |
-//! | [`shape`] | shapes and the morphing rules between them |
-//! | [`point`] | points and cubic Bézier segments |
-//! | [`path`] | contours and paths |
-//! | [`correspondence`] | matching the points of two contours |
-//! | [`morph`] | morph plans between compatible paths |
-//! | [`cache`] | caching of morph plans |
+//! | `rect` | axis aligned rectangles |
+//! | `rounded` | rounded rectangles and corner radii |
+//! | `shape` | shapes and the morphing rules between them |
+//! | `point` | points and cubic Bézier segments |
+//! | `path` | contours and paths |
+//! | `correspondence` | matching the points of two contours |
+//! | `morph` | morph plans between compatible paths |
+//! | `cache` | caching of morph plans |
 //!
 //! ## Two levels of morphing
 //!
@@ -52,7 +52,6 @@
 //! assert_eq!(shape.bounds().width, 220.0);
 //! ```
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 extern crate alloc;

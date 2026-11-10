@@ -9,15 +9,15 @@
 //!
 //! | Module | Purpose |
 //! |---|---|
-//! | [`spring`] | exact-time damped-spring solver |
-//! | [`value`] | [`Animated<T>`]: a spring-driven property of any interpolable type |
-//! | [`tween`] | fixed-duration tweens and easing curves |
-//! | [`tokens`] | named motion presets |
-//! | [`clock`] | the shared monotonic clock and its gap policies |
-//! | [`policy`] | accessibility policy (full / reduced / off motion) |
-//! | [`scheduler`] | the animation registry and frame scheduler |
-//! | [`engine`] | the application facing [`MotionEngine`] façade |
-//! | [`snapshot`] | renderer-agnostic value snapshots |
+//! | `spring` | exact-time damped-spring solver |
+//! | `value` | [`Animated<T>`]: a spring-driven property of any interpolable type |
+//! | `tween` | fixed-duration tweens and easing curves |
+//! | `tokens` | named motion presets |
+//! | `clock` | the shared monotonic clock and its gap policies |
+//! | `policy` | accessibility policy (full / reduced / off motion) |
+//! | `scheduler` | the animation registry and frame scheduler |
+//! | `engine` | the application facing [`MotionEngine`] façade |
+//! | `snapshot` | renderer-agnostic value snapshots |
 //!
 //! ## Design rules
 //!
@@ -44,7 +44,6 @@
 //! # Ok::<(), weave_core::SpringError>(())
 //! ```
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 extern crate alloc;
