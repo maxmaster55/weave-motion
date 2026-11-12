@@ -13,6 +13,7 @@
 //! | [`value`] | [`Animated<T>`]: a spring-driven property of any interpolable type |
 //! | [`tween`] | fixed-duration tweens and easing curves |
 //! | [`tokens`] | named motion presets |
+//! | [`scheme`] | complete spring sets per motion role (standard, expressive, calm) |
 //! | [`clock`] | the shared monotonic clock and its gap policies |
 //! | [`policy`] | accessibility policy (full / reduced / off motion) |
 //! | [`scheduler`] | the animation registry and frame scheduler |
@@ -56,6 +57,7 @@ mod error;
 mod math;
 mod policy;
 mod scheduler;
+mod scheme;
 mod snapshot;
 mod spring;
 mod tokens;
@@ -72,6 +74,7 @@ pub use scheduler::{
     AnimatedValue, AnimationEvent, AnimationId, AnimationKind, AnimationSnapshot, MotionSnapshot,
     Scheduler,
 };
+pub use scheme::{MotionRole, MotionScheme};
 pub use snapshot::ValueSnapshot;
 pub use spring::{solve, Spring, SpringConfig, DEFAULT_POSITION_EPSILON, DEFAULT_VELOCITY_EPSILON};
 pub use tokens::{MotionPreset, MotionToken};
