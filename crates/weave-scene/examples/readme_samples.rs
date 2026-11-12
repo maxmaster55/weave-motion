@@ -1,7 +1,7 @@
 //! Deterministic samples for the README illustrations; no renderer required.
-use weaver_motion::{MotionToken, Spring};
 use weave_geometry::{Radii, Rect, Shape};
 use weave_scene::Scene;
+use weaver_motion::{MotionToken, Spring};
 
 fn main() {
     let tokens = [

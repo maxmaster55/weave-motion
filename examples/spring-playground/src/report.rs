@@ -4,8 +4,8 @@
 //! no terminal, no input and no GPU, which makes it usable from CI and
 //! from a build machine.
 
-use weaver_motion::{MotionPolicy, MotionToken};
 use weave_demo_support::Canvas;
+use weaver_motion::{MotionPolicy, MotionToken};
 
 use crate::trace::{simulate, simulate_with_retarget, Trace};
 

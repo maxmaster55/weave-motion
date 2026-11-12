@@ -2,10 +2,10 @@
 
 use std::string::String;
 
-use weaver_motion::MotionPolicy;
 use weave_demo_support::Canvas;
 use weave_geometry::{Radii, Rect, Shape};
 use weave_scene::{Cue, Direction, Gate, Scene, SceneSnapshot};
+use weaver_motion::MotionPolicy;
 
 /// The bounds of the button, in canvas cells.
 pub const BUTTON: Rect = Rect::new(28.0, 9.0, 20.0, 4.0);

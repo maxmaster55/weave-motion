@@ -1,8 +1,8 @@
 //! Transforms and the FLIP technique.
 
 use crate::id::ElementId;
-use weaver_motion::{Animatable, ValueSnapshot};
 use weave_geometry::Rect;
+use weaver_motion::{Animatable, ValueSnapshot};
 
 /// An affine transform restricted to translation and uniform-per-axis scale.
 ///

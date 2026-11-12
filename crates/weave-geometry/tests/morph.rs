@@ -1,7 +1,7 @@
 //! Tests for the geometry primitives and their use with the engine.
 
-use weaver_motion::{Animated, MotionToken, SpringConfig};
 use weave_geometry::{Extrapolation, Morph, Radii, Rect, RoundedRect, Shape};
+use weaver_motion::{Animated, MotionToken, SpringConfig};
 
 #[test]
 fn a_morph_stays_valid_over_the_whole_range() {

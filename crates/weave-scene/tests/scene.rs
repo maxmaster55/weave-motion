@@ -1,8 +1,8 @@
 //! Tests for the scene layer.
 
-use weaver_motion::MotionPolicy;
 use weave_geometry::{Rect, Shape};
 use weave_scene::{Cue, Direction, Gate, Scene, TransitionMode};
+use weaver_motion::MotionPolicy;
 
 fn rect(x: f64, y: f64, width: f64, height: f64) -> Rect {
     Rect::new(x, y, width, height)

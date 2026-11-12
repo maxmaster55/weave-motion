@@ -8,9 +8,9 @@ use std::io::{BufRead, Write};
 use std::sync::mpsc::{channel, Receiver};
 use std::thread;
 
-use weaver_motion::{AnimationId, MotionEngine, MotionPolicy, MotionToken};
 use weave_demo_support::ansi;
 use weave_demo_support::{Canvas, DemoClock};
+use weaver_motion::{AnimationId, MotionEngine, MotionPolicy, MotionToken};
 
 const WIDTH: usize = 72;
 const HEIGHT: usize = 18;

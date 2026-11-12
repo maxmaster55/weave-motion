@@ -17,10 +17,10 @@ use alloc::collections::BTreeMap;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
+use weave_geometry::{Morph, Radii, Rect, RoundedRect, Shape};
 use weaver_motion::{
     Animated, AnimationId, MotionEngine, MotionPolicy, MotionSnapshot, MotionToken, SpringConfig,
 };
-use weave_geometry::{Morph, Radii, Rect, RoundedRect, Shape};
 
 use crate::choreography::{Choreographer, Cue, Direction, Gate};
 use crate::id::{ElementId, ElementRegistry};

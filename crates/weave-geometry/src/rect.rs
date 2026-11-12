@@ -186,7 +186,8 @@ impl Animatable for Rect {
     ) -> (Self, Self) {
         let (x, vx) = weaver_motion::solve(config, value.x, velocity.x, target.x, dt);
         let (y, vy) = weaver_motion::solve(config, value.y, velocity.y, target.y, dt);
-        let (width, vw) = weaver_motion::solve(config, value.width, velocity.width, target.width, dt);
+        let (width, vw) =
+            weaver_motion::solve(config, value.width, velocity.width, target.width, dt);
         let (height, vh) =
             weaver_motion::solve(config, value.height, velocity.height, target.height, dt);
 
