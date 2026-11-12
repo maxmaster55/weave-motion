@@ -9,6 +9,31 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 The first release of the Weave motion engine: a portable, renderer
 independent motion system for UI applications.
 
+### Motion research update
+
+See [`docs/MOTION.md`](docs/MOTION.md), the new motion guide.
+
+* Added `SpringConfig::from_duration_bounce` (corrected Apple mapping),
+  `from_response`, `perceptual_duration`, `bounce`, `overshoot`,
+  `settle_time`, `effective_damping_ratio` and `with_settle_threshold`;
+  `MIN_DAMPING_RATIO` and the per-unit thresholds `SETTLE_POSITION_PX`,
+  `SETTLE_SCALE`, `SETTLE_OPACITY`, `SETTLE_COLOR`; `SpringError::InvalidDuration`
+  and `SpringError::InvalidBounce`.
+* Added role-aware reduced motion: `MotionPolicy::spring_for_role`,
+  `spring_config_for_role`, `prefers_crossfade` and `CROSSFADE_DISTANCE_PX`.
+* Added stagger helpers: `stagger_interval`, `stagger_delay`,
+  `stagger_delays` and the `STAGGER_*` constants.
+* Added `MotionToken::role` and `replacement_spring`; `MotionToken` presets
+  are documented as superseded by scheme roles (values unchanged).
+* Changed: damping ratios below 0.05 are evaluated as 0.05.
+* Changed: effects roles settle at 1/255 (`EFFECTS_EPSILON`, was 1e-3) with a
+  velocity tolerance of `EFFECTS_EPSILON * omega`.
+* Changed: `MotionEngine::spring_for_role` uses the role-aware mapping; under
+  `Reduced`, spatial roles keep their stiffness (was doubled) and effects
+  roles are unchanged (were doubled in stiffness).
+* Fixed: the overdamped slow root no longer cancels for very large damping
+  ratios (a spring with ζ ≈ 1e8 froze).
+
 ### Added
 
 #### Core (`weaver-motion`)

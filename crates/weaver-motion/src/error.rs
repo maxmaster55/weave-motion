@@ -26,6 +26,11 @@ pub enum SpringError {
     NonFiniteVelocityEpsilon,
     /// `velocity_epsilon` was negative.
     NegativeVelocityEpsilon,
+    /// A perceptual duration or response was not a finite number greater
+    /// than zero.
+    InvalidDuration,
+    /// A bounce was not a finite number in `(-1, 1]`.
+    InvalidBounce,
 }
 
 impl fmt::Display for SpringError {
@@ -41,6 +46,8 @@ impl fmt::Display for SpringError {
             SpringError::NegativePositionEpsilon => "position epsilon must not be negative",
             SpringError::NonFiniteVelocityEpsilon => "velocity epsilon must be a finite number",
             SpringError::NegativeVelocityEpsilon => "velocity epsilon must not be negative",
+            SpringError::InvalidDuration => "duration must be a finite number greater than zero",
+            SpringError::InvalidBounce => "bounce must be a finite number in (-1, 1]",
         };
         f.write_str(message)
     }

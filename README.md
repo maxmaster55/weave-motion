@@ -43,8 +43,9 @@ Enter `p` to expand, `b` to collapse, `m` to toggle reduced motion, or `q` to qu
 ![Four spring presets moving to the same destination: fast, default, expressive, and gentle.](docs/assets/spring-presets.gif)
 
 Four presets, one destination. Fast feedback, everyday motion, a little
-overshoot, or a quiet settle. These are Weave's own starting points; tune
-them to the distance and the surface you're animating.
+overshoot, or a quiet settle. These original presets are now superseded by
+the motion-role scheme described in the [motion guide](docs/MOTION.md);
+`MotionToken::role()` names each one's replacement.
 
 ```sh
 cargo run -p spring-playground -- --interactive
@@ -144,6 +145,33 @@ integration. Physics follows elapsed time across different frame cadences.
 Settled animations stop requesting frames through the scheduler; your
 application controls its event loop.
 
+### Motion roles and the motion guide
+
+Pick springs by what changes, not by feel. [`docs/MOTION.md`](docs/MOTION.md)
+is the theme-independent guide every product on Weave follows: roles,
+durations, stagger, live-data rules, reduced motion and accessibility limits.
+
+```rust
+use weaver_motion::{MotionEngine, MotionPolicy, MotionRole, SpringConfig};
+
+let mut engine = MotionEngine::with_policy(MotionPolicy::Reduced);
+// Standard scheme by default; under Reduced, spatial roles lose their bounce
+// but keep moving, and effects roles are unchanged.
+let x = engine.spring_for_role("tile.x", 0.0, MotionRole::SpatialDefault);
+engine.retarget(x, 240.0);
+
+// Designer-facing parameters, Apple style.
+let spring = SpringConfig::from_duration_bounce(0.5, 0.3).unwrap();
+assert!((spring.overshoot() - 0.046).abs() < 0.001); // bounce is not overshoot
+```
+
+Also new: `perceptual_duration()`, `bounce()`, `overshoot()` and
+`settle_time(ε)` on `SpringConfig`; per-unit settle thresholds
+(`SETTLE_POSITION_PX`, `SETTLE_SCALE`, `SETTLE_OPACITY`, `SETTLE_COLOR`) with
+`with_settle_threshold`; `MotionPolicy::spring_for_role` and
+`prefers_crossfade(distance_px)`; and `stagger_delays(n)` for capped,
+time-based entrance cascades.
+
 For embedded or bare Wasm use, select `default-features = false` and
 `features = ["libm"]`. The core requires `alloc`; renderer dependencies stay
 optional. See the [portability guide](docs/PORTABILITY.md).
@@ -172,6 +200,7 @@ changing their semantic state.
 
 | Start here | What you'll find |
 | :--- | :--- |
+| [Motion guide](docs/MOTION.md) | Roles, tokens, stagger, live data, reduced motion, accessibility limits, conversions |
 | [Architecture](docs/ARCHITECTURE.md) | Layers, frame flow, and engineering decisions |
 | [Portability & integration](docs/PORTABILITY.md) | Features, `no_std`, consuming the crates, and Nix |
 | [Profiling](docs/PROFILING.md) | Recorded measurements and their limits |
@@ -189,7 +218,8 @@ above do not establish adapter performance or device frame rates.
 
 Morphing supports compatible contours. Topology changes such as holes,
 splits, or merges need a caller-provided fallback. Spring presets still
-need perceptual tuning for each product and distance.
+need perceptual tuning for each product and distance; the scheme roles
+follow Material 3's published values and are the recommended starting point.
 
 Weave takes inspiration from Material 3 Expressive motion concepts. It is
 not a Google product or endorsement, and its presets are not official

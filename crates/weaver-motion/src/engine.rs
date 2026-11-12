@@ -80,7 +80,10 @@ impl MotionEngine {
     }
 
     /// Registers a scalar spring under `key` using the active scheme's
-    /// spring for `role`, adjusted by the motion policy.
+    /// spring for `role`, adjusted by the motion policy with the role-aware
+    /// mapping of [`MotionPolicy::spring_for_role`]: under
+    /// [`MotionPolicy::Reduced`] spatial roles keep their stiffness but lose
+    /// their bounce, and effects roles are unchanged.
     ///
     /// Continuity on repeated calls is the same as [`MotionEngine::spring`].
     pub fn spring_for_role(
@@ -89,13 +92,14 @@ impl MotionEngine {
         initial: f64,
         role: MotionRole,
     ) -> AnimationId {
-        let config = self.policy.spring_config(self.scheme.spring(role));
+        let config = self.policy.spring_for_role(&self.scheme, role);
         self.insert_spring(key.into(), initial, config)
     }
 
-    /// Registers a scalar spring under `key`.
+    /// Registers a scalar spring under `key` from a [`MotionToken`].
     ///
-    /// The spring starts at rest at `initial`. Use [`MotionEngine::retarget`]
+    /// Tokens are superseded by roles; prefer
+    /// [`MotionEngine::spring_for_role`]. The spring starts at rest at `initial`. Use [`MotionEngine::retarget`]
     /// to move it. If the key already holds a spring, its current value and
     /// velocity are carried over so that repeated calls stay continuous.
     pub fn spring(

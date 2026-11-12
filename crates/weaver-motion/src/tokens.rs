@@ -1,21 +1,40 @@
-//! Motion tokens: named starting points for spring and tween behaviour.
+//! Motion tokens: Weave's original named presets, **superseded by
+//! [`MotionScheme`] roles**.
 //!
-//! These presets are **Weave's own**, not official Material tokens. They are
-//! starting points that still need perceptual tuning per product: a spring
-//! that feels right for a 40 px button overshoots badly on a 900 px panel.
+//! These presets predate the role scheme. They are kept, with unchanged
+//! values, so existing code (weave-scene, the examples) keeps compiling and
+//! behaving the same. New code should pick a [`MotionRole`] from a
+//! [`MotionScheme`] instead; `docs/MOTION.md` explains how.
 //!
-//! | Token | Stiffness | Damping ratio | Typical use |
-//! |---|---:|---:|---|
-//! | `fast_spatial` | 500 | 0.85 | press / hover / focus feedback |
-//! | `default_spatial` | 300 | 0.80 | menus, cards, everyday movement |
-//! | `expressive_spatial` | 220 | 0.65 | hero transitions with a soft bounce |
-//! | `gentle_spatial` | 140 | 1.00 | large surfaces, restrained motion |
-//! | `effects` | tween | – | opacity and colour, ~150 ms |
+//! Measured against the motion research behind `docs/MOTION.md`, the old
+//! spatial presets run long: their perceptual durations are 281–531 ms and
+//! their 1e-3 settle times 391–780 ms, past the ~500 ms UI ceiling, and
+//! `expressive_spatial` overshoots 6.8%. They also duplicate the scheme
+//! roles. [`MotionToken::role`] gives each token's replacement:
+//!
+//! | Token | Stiffness | Damping ratio | Perceptual duration | Replacement role |
+//! |---|---:|---:|---:|---|
+//! | `fast_spatial` | 500 | 0.85 | 281 ms | standard `SpatialDefault` |
+//! | `default_spatial` | 300 | 0.80 | 363 ms | standard `SpatialSlow` |
+//! | `expressive_spatial` | 220 | 0.65 | 424 ms | **expressive** `SpatialDefault` |
+//! | `gentle_spatial` | 140 | 1.00 | 531 ms | none for movement; only non-interactive background dimming, as `EffectsSlow` |
+//! | `effects` | tween 150 ms | – | – | `EffectsDefault` |
+//!
+//! [`MotionToken::replacement_spring`] returns the replacement role's spring
+//! from the right scheme.
 
+use crate::scheme::{MotionRole, MotionScheme};
 use crate::spring::SpringConfig;
 use crate::tween::{Easing, TweenConfig};
 
-/// A named motion preset.
+/// A named motion preset, superseded by [`MotionRole`].
+///
+/// The values are unchanged and kept for existing code. Mapping to roles
+/// (see `docs/MOTION.md`): `FastSpatial` → standard `SpatialDefault`,
+/// `DefaultSpatial` → standard `SpatialSlow`, `ExpressiveSpatial` →
+/// expressive `SpatialDefault`, `GentleSpatial` → only non-interactive
+/// background dimming (`EffectsSlow`), `Effects` → `EffectsDefault`.
+/// [`MotionToken::role`] and [`MotionToken::replacement_spring`] return them.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum MotionToken {
     /// Fast, barely-overshooting feedback for direct manipulation.
@@ -67,6 +86,34 @@ impl MotionToken {
             MotionToken::Effects => return None,
         };
         Some(SpringConfig::unit_mass(stiffness, damping_ratio).expect("valid token"))
+    }
+
+    /// The [`MotionRole`] that replaces this token.
+    ///
+    /// `ExpressiveSpatial` maps to `SpatialDefault` *of the expressive
+    /// scheme*; [`MotionToken::replacement_spring`] accounts for that.
+    /// `GentleSpatial` has no spatial replacement: its 780 ms settle is too
+    /// slow for anything interactive, and its only remaining use is
+    /// non-interactive background dimming, an `EffectsSlow` job.
+    pub const fn role(self) -> MotionRole {
+        match self {
+            MotionToken::FastSpatial => MotionRole::SpatialDefault,
+            MotionToken::DefaultSpatial => MotionRole::SpatialSlow,
+            MotionToken::ExpressiveSpatial => MotionRole::SpatialDefault,
+            MotionToken::GentleSpatial => MotionRole::EffectsSlow,
+            MotionToken::Effects => MotionRole::EffectsDefault,
+        }
+    }
+
+    /// The spring of this token's replacement role: from
+    /// [`MotionScheme::expressive`] for `ExpressiveSpatial`, from
+    /// [`MotionScheme::standard`] otherwise.
+    pub fn replacement_spring(self) -> SpringConfig {
+        let scheme = match self {
+            MotionToken::ExpressiveSpatial => MotionScheme::expressive(),
+            _ => MotionScheme::standard(),
+        };
+        scheme.spring(self.role())
     }
 
     /// The tween configuration described by the token.
@@ -124,5 +171,51 @@ mod tests {
         assert!(fast.omega() > default.omega());
         assert!(default.omega() > expressive.omega());
         assert!(expressive.omega() > gentle.omega());
+    }
+
+    #[test]
+    fn tokens_map_to_the_report_roles() {
+        assert_eq!(MotionToken::FastSpatial.role(), MotionRole::SpatialDefault);
+        assert_eq!(MotionToken::DefaultSpatial.role(), MotionRole::SpatialSlow);
+        assert_eq!(
+            MotionToken::ExpressiveSpatial.role(),
+            MotionRole::SpatialDefault
+        );
+        assert_eq!(MotionToken::GentleSpatial.role(), MotionRole::EffectsSlow);
+        assert_eq!(MotionToken::Effects.role(), MotionRole::EffectsDefault);
+        assert_eq!(
+            MotionToken::ExpressiveSpatial.replacement_spring(),
+            MotionScheme::expressive().spatial_default
+        );
+        assert_eq!(
+            MotionToken::DefaultSpatial.replacement_spring(),
+            MotionScheme::standard().spatial_slow
+        );
+    }
+
+    #[test]
+    fn replacements_are_no_slower_than_the_old_tokens() {
+        for token in MotionToken::ALL {
+            let Some(old) = token.spring_config() else {
+                continue;
+            };
+            let new = token.replacement_spring();
+            assert!(
+                new.settle_time(1e-3) < old.settle_time(1e-3),
+                "{}",
+                token.name()
+            );
+            assert!(new.overshoot() <= old.overshoot(), "{}", token.name());
+        }
+    }
+
+    #[test]
+    fn documented_perceptual_durations() {
+        let ms =
+            |t: MotionToken| (t.spring_config().unwrap().perceptual_duration() * 1000.0).round();
+        assert_eq!(ms(MotionToken::FastSpatial), 281.0);
+        assert_eq!(ms(MotionToken::DefaultSpatial), 363.0);
+        assert_eq!(ms(MotionToken::ExpressiveSpatial), 424.0);
+        assert_eq!(ms(MotionToken::GentleSpatial), 531.0);
     }
 }

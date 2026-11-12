@@ -188,3 +188,57 @@ fn removing_an_animation_stops_the_frame_loop() {
     assert!(!engine.needs_frame());
     assert!(engine.is_idle());
 }
+
+#[test]
+fn reduced_role_springs_keep_moving_without_bounce() {
+    use weaver_motion::{MotionRole, MotionScheme};
+
+    let run = |policy: MotionPolicy| {
+        let mut engine = MotionEngine::with_policy(policy);
+        engine.set_scheme(MotionScheme::expressive());
+        let id = engine.spring_for_role("x", 0.0, MotionRole::SpatialFast);
+        engine.tick(0.0);
+        engine.retarget(id, 1.0);
+        engine.tick(1.0 / 60.0);
+        let first = engine.value_f64(id).unwrap();
+        let mut peak = first;
+        for frame in 2..240 {
+            engine.tick(frame as f64 / 60.0);
+            peak = peak.max(engine.value_f64(id).unwrap());
+        }
+        (first, peak)
+    };
+
+    let (full_first, full_peak) = run(MotionPolicy::Full);
+    let (reduced_first, reduced_peak) = run(MotionPolicy::Reduced);
+    assert!(full_peak > 1.05, "expressive fast spatial overshoots");
+    assert!(reduced_peak <= 1.0, "reduced motion must not bounce");
+    // Still a motion, not a snap: one frame in, it is part-way there.
+    assert!(
+        reduced_first > 0.05 && reduced_first < 0.95,
+        "{reduced_first}"
+    );
+    assert!(full_first > 0.0);
+}
+
+#[test]
+fn engine_retarget_rebases_from_the_evaluated_state() {
+    let mut engine = MotionEngine::new();
+    let id = engine.spring_for_role("x", 0.0, weaver_motion::MotionRole::SpatialDefault);
+    engine.tick(0.0);
+    engine.retarget(id, 100.0);
+    engine.tick(0.05);
+
+    let before = *engine.scheduler().get_animated::<f64>(id).expect("spring");
+    engine.retarget(id, -100.0);
+    let after = engine.scheduler().get_animated::<f64>(id).unwrap();
+    assert_eq!(after.value(), before.value());
+    assert_eq!(after.velocity(), before.velocity());
+
+    // The next frame continues from that state, with that velocity, not
+    // from the old model value.
+    engine.tick(0.05 + 1e-6);
+    let next = engine.value_f64(id).unwrap();
+    let expected = before.value() + before.velocity() * 1e-6;
+    assert!((next - expected).abs() < 1e-6, "{next} vs {expected}");
+}

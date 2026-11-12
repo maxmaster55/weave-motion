@@ -14,10 +14,17 @@
 //! direct feedback (a pressed button), default for everyday movement, slow for
 //! large surfaces and full-screen transitions.
 //!
-//! The `standard` and `expressive` values follow the shape of Material 3
-//! Expressive's published motion schemes; `calm` is Weave's own, with no
-//! overshoot at all. Like [`MotionToken`](crate::MotionToken), they are
-//! starting points to tune per product, not official tokens.
+//! The `standard` and `expressive` values match Material 3's published
+//! spring tokens (`StandardMotionTokens.kt`, `ExpressiveMotionTokens.kt`);
+//! `calm` is Weave's own, with no overshoot at all. They are starting points
+//! to tune per product, not official tokens.
+//!
+//! **Standard is the default** ([`MotionScheme::default`]) and the right
+//! choice for always-visible, productive surfaces: shells, dashboards,
+//! widgets. **Expressive is opt-in** per surface, for rare user-initiated
+//! moments such as completion or onboarding: its fast spatial spring
+//! overshoots about 9.5%, and the rest of it is mainly slower. See
+//! `docs/MOTION.md` for how to choose a role.
 //!
 //! | Scheme | Spatial fast | Spatial default | Spatial slow | Effects fast / default / slow |
 //! |---|---|---|---|---|
@@ -25,9 +32,36 @@
 //! | `expressive` | 800, 0.6 | 380, 0.8 | 200, 0.8 | 3800 / 1600 / 800, 1.0 |
 //! | `calm` | 1000, 1.0 | 500, 1.0 | 240, 1.0 | 3800 / 1600 / 800, 1.0 |
 //!
-//! Values are stiffness (unit mass) and damping ratio. Effects springs settle
-//! within [`EFFECTS_EPSILON`], because opacity and colour live in `0..=1`
-//! where the default pixel-sized tolerance would cut the last 1% short.
+//! Values are stiffness (unit mass) and damping ratio.
+//!
+//! | Role | Perceptual duration `2π/√k` (standard · expressive) | Overshoot (standard · expressive) |
+//! |---|---|---|
+//! | spatial fast | 168 ms · 222 ms | 0.15% · 9.5% |
+//! | spatial default | 237 ms · 322 ms | 0.15% · 1.5% |
+//! | spatial slow | 363 ms · 444 ms | 0.15% · 1.5% |
+//! | effects fast / default / slow | 102 / 157 / 222 ms | none |
+//!
+//! ## Settle thresholds
+//!
+//! Effects roles always animate opacity or a normalised colour channel, so
+//! they settle at [`EFFECTS_EPSILON`] (one 8-bit step, 1/255) via
+//! [`SpringConfig::with_settle_threshold`]: the final snap is invisible and
+//! the spring stops sooner than with a tighter tolerance. Spatial roles do
+//! not imply a unit (they drive pixels *and* scale factors), so they keep the
+//! default tolerance (0.01 units, well under half a pixel). For scale, apply
+//! [`SETTLE_SCALE`](crate::SETTLE_SCALE); for pixels,
+//! [`SETTLE_POSITION_PX`](crate::SETTLE_POSITION_PX) may be used to stop
+//! sooner:
+//!
+//! ```
+//! use weaver_motion::{MotionRole, MotionScheme, SETTLE_SCALE};
+//!
+//! let press = MotionScheme::default()
+//!     .spring(MotionRole::SpatialFast)
+//!     .with_settle_threshold(SETTLE_SCALE)?;
+//! # let _ = press;
+//! # Ok::<(), weaver_motion::SpringError>(())
+//! ```
 //!
 //! ```
 //! use weaver_motion::{Animated, MotionRole, MotionScheme};
@@ -40,8 +74,15 @@
 
 use crate::spring::SpringConfig;
 
-/// Settling tolerance (position and velocity) of every effects spring.
-pub const EFFECTS_EPSILON: f64 = 1e-3;
+/// Settle threshold of every effects spring: one 8-bit channel step
+/// (1/255, [`SETTLE_OPACITY`](crate::SETTLE_OPACITY)).
+///
+/// It is the position tolerance; the velocity tolerance is
+/// `EFFECTS_EPSILON * omega` (see [`SpringConfig::with_settle_threshold`]).
+/// Before the per-unit thresholds this was `1e-3` for both, which kept
+/// effects springs running 30–60% past the point where any change is
+/// visible.
+pub const EFFECTS_EPSILON: f64 = 1.0 / 255.0;
 
 /// The kind of movement a spring is used for.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -120,18 +161,21 @@ fn spring(stiffness: f64, damping_ratio: f64) -> SpringConfig {
 
 fn effects(stiffness: f64) -> SpringConfig {
     spring(stiffness, 1.0)
-        .with_position_epsilon(EFFECTS_EPSILON)
-        .and_then(|c| c.with_velocity_epsilon(EFFECTS_EPSILON))
+        .with_settle_threshold(EFFECTS_EPSILON)
         .expect("valid effects tolerance")
 }
 
 impl MotionScheme {
-    /// Brisk, barely-overshooting motion for everyday tools.
+    /// Brisk, barely-overshooting motion for everyday tools (Material 3
+    /// standard). The default, and the right scheme for always-visible
+    /// surfaces such as shells, dashboards and widgets.
     pub fn standard() -> Self {
         Self::with_spatial([(1400.0, 0.9), (700.0, 0.9), (300.0, 0.9)])
     }
 
-    /// Springier motion with a visible bounce on spatial movement.
+    /// Springier motion with a visible bounce on spatial movement (Material
+    /// 3 expressive). Opt-in per surface for rare, user-initiated moments;
+    /// not for always-visible productive surfaces.
     pub fn expressive() -> Self {
         Self::with_spatial([(800.0, 0.6), (380.0, 0.8), (200.0, 0.8)])
     }
@@ -179,6 +223,7 @@ impl MotionScheme {
 }
 
 impl Default for MotionScheme {
+    /// [`MotionScheme::standard`].
     fn default() -> Self {
         Self::standard()
     }
@@ -262,8 +307,9 @@ mod tests {
     fn effects_settle_within_the_tight_tolerance() {
         for scheme in schemes() {
             for role in MotionRole::ALL.into_iter().filter(|r| r.is_effects()) {
-                assert_eq!(scheme.spring(role).position_epsilon, EFFECTS_EPSILON);
-                assert_eq!(scheme.spring(role).velocity_epsilon, EFFECTS_EPSILON);
+                let spring = scheme.spring(role);
+                assert_eq!(spring.position_epsilon, EFFECTS_EPSILON);
+                assert_eq!(spring.velocity_epsilon, EFFECTS_EPSILON * spring.omega());
             }
         }
     }
@@ -333,5 +379,42 @@ mod tests {
                 "effects_slow"
             ]
         );
+    }
+
+    #[test]
+    fn perceptual_values_match_the_m3_tables() {
+        let ms = |c: SpringConfig| (c.perceptual_duration() * 1000.0).round();
+        let (standard, expressive) = (MotionScheme::standard(), MotionScheme::expressive());
+        assert_eq!(ms(standard.spatial_fast), 168.0);
+        assert_eq!(ms(standard.spatial_default), 237.0);
+        assert_eq!(ms(standard.spatial_slow), 363.0);
+        assert_eq!(ms(expressive.spatial_fast), 222.0);
+        assert_eq!(ms(expressive.spatial_default), 322.0);
+        assert_eq!(ms(expressive.spatial_slow), 444.0);
+        assert_eq!(ms(standard.effects_fast), 102.0);
+        assert_eq!(ms(standard.effects_default), 157.0);
+        assert_eq!(ms(standard.effects_slow), 222.0);
+
+        let pct = |c: SpringConfig| (c.overshoot() * 1000.0).round() / 10.0;
+        assert_eq!(pct(standard.spatial_fast), 0.2); // 0.15%
+        assert_eq!(pct(expressive.spatial_fast), 9.5);
+        assert_eq!(pct(expressive.spatial_default), 1.5);
+        assert_eq!(standard.effects_default.overshoot(), 0.0);
+    }
+
+    #[test]
+    fn effects_stop_sooner_with_the_per_unit_threshold() {
+        // Frames until an effects spring reports settled, at 240 Hz.
+        let frames = |config: SpringConfig| trajectory(config).1;
+        for stiffness in [3800.0, 1600.0, 800.0] {
+            let old = SpringConfig::unit_mass(stiffness, 1.0)
+                .unwrap()
+                .with_position_epsilon(1e-3)
+                .unwrap()
+                .with_velocity_epsilon(1e-3)
+                .unwrap();
+            let new = effects(stiffness);
+            assert!(frames(new) < frames(old), "k {stiffness}");
+        }
     }
 }
