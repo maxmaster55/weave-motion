@@ -25,7 +25,9 @@
 //! | `expressive` | 800, 0.6 | 380, 0.8 | 200, 0.8 | 3800 / 1600 / 800, 1.0 |
 //! | `calm` | 1000, 1.0 | 500, 1.0 | 240, 1.0 | 3800 / 1600 / 800, 1.0 |
 //!
-//! Values are stiffness (unit mass) and damping ratio.
+//! Values are stiffness (unit mass) and damping ratio. Effects springs settle
+//! within [`EFFECTS_EPSILON`], because opacity and colour live in `0..=1`
+//! where the default pixel-sized tolerance would cut the last 1% short.
 //!
 //! ```
 //! use weaver_motion::{Animated, MotionRole, MotionScheme};
@@ -37,6 +39,9 @@
 //! ```
 
 use crate::spring::SpringConfig;
+
+/// Settling tolerance (position and velocity) of every effects spring.
+pub const EFFECTS_EPSILON: f64 = 1e-3;
 
 /// The kind of movement a spring is used for.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -67,7 +72,7 @@ impl MotionRole {
     ];
 
     /// The role's snake_case name.
-    pub fn name(self) -> &'static str {
+    pub const fn name(self) -> &'static str {
         match self {
             MotionRole::SpatialFast => "spatial_fast",
             MotionRole::SpatialDefault => "spatial_default",
@@ -79,11 +84,16 @@ impl MotionRole {
     }
 
     /// Whether the role moves things (as opposed to changing how they look).
-    pub fn is_spatial(self) -> bool {
+    pub const fn is_spatial(self) -> bool {
         matches!(
             self,
             MotionRole::SpatialFast | MotionRole::SpatialDefault | MotionRole::SpatialSlow
         )
+    }
+
+    /// Whether the role changes how things look (opacity, colour).
+    pub const fn is_effects(self) -> bool {
+        !self.is_spatial()
     }
 }
 
@@ -108,6 +118,13 @@ fn spring(stiffness: f64, damping_ratio: f64) -> SpringConfig {
     SpringConfig::unit_mass(stiffness, damping_ratio).expect("valid scheme spring")
 }
 
+fn effects(stiffness: f64) -> SpringConfig {
+    spring(stiffness, 1.0)
+        .with_position_epsilon(EFFECTS_EPSILON)
+        .and_then(|c| c.with_velocity_epsilon(EFFECTS_EPSILON))
+        .expect("valid effects tolerance")
+}
+
 impl MotionScheme {
     /// Brisk, barely-overshooting motion for everyday tools.
     pub fn standard() -> Self {
@@ -129,14 +146,14 @@ impl MotionScheme {
             spatial_fast: spring(spatial[0].0, spatial[0].1),
             spatial_default: spring(spatial[1].0, spatial[1].1),
             spatial_slow: spring(spatial[2].0, spatial[2].1),
-            effects_fast: spring(3800.0, 1.0),
-            effects_default: spring(1600.0, 1.0),
-            effects_slow: spring(800.0, 1.0),
+            effects_fast: effects(3800.0),
+            effects_default: effects(1600.0),
+            effects_slow: effects(800.0),
         }
     }
 
     /// The spring this scheme uses for `role`.
-    pub fn spring(&self, role: MotionRole) -> SpringConfig {
+    pub const fn spring(&self, role: MotionRole) -> SpringConfig {
         match role {
             MotionRole::SpatialFast => self.spatial_fast,
             MotionRole::SpatialDefault => self.spatial_default,
@@ -224,6 +241,82 @@ mod tests {
             };
             assert_eq!(scheme.spring(role), expected, "{}", role.name());
         }
+    }
+
+    #[test]
+    fn default_is_standard() {
+        assert_eq!(MotionScheme::default(), MotionScheme::standard());
+    }
+
+    #[test]
+    fn roles_split_into_spatial_and_effects() {
+        let spatial: usize = MotionRole::ALL.iter().filter(|r| r.is_spatial()).count();
+        assert_eq!(spatial, 3);
+        for role in MotionRole::ALL {
+            assert_ne!(role.is_spatial(), role.is_effects(), "{}", role.name());
+            assert_eq!(role.is_spatial(), role.name().starts_with("spatial"));
+        }
+    }
+
+    #[test]
+    fn effects_settle_within_the_tight_tolerance() {
+        for scheme in schemes() {
+            for role in MotionRole::ALL.into_iter().filter(|r| r.is_effects()) {
+                assert_eq!(scheme.spring(role).position_epsilon, EFFECTS_EPSILON);
+                assert_eq!(scheme.spring(role).velocity_epsilon, EFFECTS_EPSILON);
+            }
+        }
+    }
+
+    /// Steps a 0 -> 1 spring until it settles; returns (peak value, steps).
+    fn trajectory(config: SpringConfig) -> (f64, usize) {
+        let mut s = crate::Spring::new(0.0, 1.0, config);
+        let mut peak = 0.0_f64;
+        for step in 1..=4800 {
+            let active = s.advance(1.0 / 240.0);
+            peak = peak.max(s.value());
+            if !active {
+                return (peak, step);
+            }
+        }
+        (peak, usize::MAX)
+    }
+
+    #[test]
+    fn trajectories_overshoot_only_where_intended_and_always_settle() {
+        for (name, scheme) in ["standard", "expressive", "calm"].iter().zip(schemes()) {
+            for role in MotionRole::ALL {
+                let (peak, steps) = trajectory(scheme.spring(role));
+                assert!(steps <= 4800, "{name} {} never settled", role.name());
+                let overshoots = peak > 1.0 + 1e-6;
+                let should = role.is_spatial() && *name != "calm";
+                assert_eq!(overshoots, should, "{name} {} peak {peak}", role.name());
+            }
+        }
+    }
+
+    #[test]
+    fn engine_uses_the_active_scheme_for_roles() {
+        let run = |scheme: MotionScheme| {
+            let mut engine = crate::MotionEngine::new();
+            engine.set_scheme(scheme);
+            assert_eq!(engine.scheme(), scheme);
+            let id = engine.spring_for_role("x", 0.0, MotionRole::SpatialFast);
+            engine.tick(0.0);
+            engine.retarget(id, 1.0);
+            let mut expected = crate::Spring::new(0.0, 1.0, scheme.spatial_fast);
+            let mut peak = 0.0_f64;
+            for frame in 1..=240 {
+                engine.tick(frame as f64 / 120.0);
+                expected.advance(1.0 / 120.0);
+                let value = engine.value_f64(id).unwrap();
+                assert!((value - expected.value()).abs() < 1e-9, "frame {frame}");
+                peak = peak.max(value);
+            }
+            peak
+        };
+        assert!(run(MotionScheme::expressive()) > 1.0);
+        assert!(run(MotionScheme::calm()) <= 1.0 + 1e-9);
     }
 
     #[test]

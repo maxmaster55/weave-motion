@@ -21,6 +21,7 @@ use alloc::string::String;
 
 use crate::policy::MotionPolicy;
 use crate::scheduler::{AnimationId, MotionSnapshot, Scheduler};
+use crate::scheme::{MotionRole, MotionScheme};
 use crate::snapshot::ValueSnapshot;
 use crate::spring::SpringConfig;
 use crate::tokens::MotionToken;
@@ -34,6 +35,7 @@ use crate::value::Animated;
 pub struct MotionEngine {
     scheduler: Scheduler,
     policy: MotionPolicy,
+    scheme: MotionScheme,
 }
 
 impl MotionEngine {
@@ -47,6 +49,7 @@ impl MotionEngine {
         Self {
             scheduler: Scheduler::new(),
             policy,
+            scheme: MotionScheme::default(),
         }
     }
 
@@ -61,6 +64,33 @@ impl MotionEngine {
     /// re-created; new animations pick up the new policy immediately.
     pub fn set_policy(&mut self, policy: MotionPolicy) {
         self.policy = policy;
+    }
+
+    /// The active motion scheme.
+    pub fn scheme(&self) -> MotionScheme {
+        self.scheme
+    }
+
+    /// Changes the motion scheme.
+    ///
+    /// Like [`MotionEngine::set_policy`], existing animations keep their
+    /// configuration until they are re-created.
+    pub fn set_scheme(&mut self, scheme: MotionScheme) {
+        self.scheme = scheme;
+    }
+
+    /// Registers a scalar spring under `key` using the active scheme's
+    /// spring for `role`, adjusted by the motion policy.
+    ///
+    /// Continuity on repeated calls is the same as [`MotionEngine::spring`].
+    pub fn spring_for_role(
+        &mut self,
+        key: impl Into<String>,
+        initial: f64,
+        role: MotionRole,
+    ) -> AnimationId {
+        let config = self.policy.spring_config(self.scheme.spring(role));
+        self.insert_spring(key.into(), initial, config)
     }
 
     /// Registers a scalar spring under `key`.

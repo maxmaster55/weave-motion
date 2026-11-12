@@ -74,7 +74,7 @@ pub use scheduler::{
     AnimatedValue, AnimationEvent, AnimationId, AnimationKind, AnimationSnapshot, MotionSnapshot,
     Scheduler,
 };
-pub use scheme::{MotionRole, MotionScheme};
+pub use scheme::{MotionRole, MotionScheme, EFFECTS_EPSILON};
 pub use snapshot::ValueSnapshot;
 pub use spring::{solve, Spring, SpringConfig, DEFAULT_POSITION_EPSILON, DEFAULT_VELOCITY_EPSILON};
 pub use tokens::{MotionPreset, MotionToken};
