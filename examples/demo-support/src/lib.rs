@@ -6,7 +6,6 @@
 //!
 //! This crate is **not** published — it only exists to keep the demos short.
 
-#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 use std::io::IsTerminal;
@@ -226,10 +225,7 @@ impl Canvas {
                 let px = x + column;
                 let py = y + row;
 
-                let in_corner = (column < r && row < r)
-                    || (column > w - r - 1 && row < r)
-                    || (column < r && row > h - r - 1)
-                    || (column > w - r - 1 && row > h - r - 1);
+                let in_corner = (column < r || column > w - r - 1) && (row < r || row > h - r - 1);
 
                 if r == 0 {
                     if px == x || px == last_x || py == y || py == last_y {
@@ -296,10 +292,7 @@ impl Canvas {
                     continue;
                 }
 
-                let in_corner = (column < r && row < r)
-                    || (column > w - r - 1 && row < r)
-                    || (column < r && row > h - r - 1)
-                    || (column > w - r - 1 && row > h - r - 1);
+                let in_corner = (column < r || column > w - r - 1) && (row < r || row > h - r - 1);
 
                 if in_corner {
                     let (cx, cy) = if column < r && row < r {

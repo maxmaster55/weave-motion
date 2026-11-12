@@ -1,6 +1,6 @@
 # weave-web
 
-Web (wasm/DOM) rendering adapter for the [Weave](../README.md) motion engine.
+Web (wasm/DOM) rendering adapter for the [Weave](../../README.md) motion engine.
 
 ## How it works
 

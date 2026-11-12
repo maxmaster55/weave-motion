@@ -6,7 +6,7 @@
 CARGO ?= cargo
 CARGO_FLAGS ?=
 
-.PHONY: help build release test lint fmt fmt-check check doc demo playground panel clean nix-dev nix-check nix-build
+.PHONY: help build release test lint fmt fmt-check check doc demo playground panel clean nix-dev nix-check nix-build js-test js-fixture wasm
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -39,6 +39,16 @@ demo: ## Run the pill-to-panel demo
 
 playground: ## Run the spring playground
 	$(CARGO) run -p spring-playground
+
+js-test: ## Test weave.js against the Rust solver (needs node)
+	node --test js/test
+
+js-fixture: ## Regenerate the Rust reference samples used by js-test
+	$(CARGO) run -q -p weave-core --example js_fixture > js/test/fixtures/springs.json
+
+wasm: ## Build the optional wasm engine into js/pkg (needs wasm-bindgen-cli)
+	$(CARGO) build -p weave-web --features web --target wasm32-unknown-unknown --release
+	wasm-bindgen --target web --out-dir js/pkg target/wasm32-unknown-unknown/release/weave_web.wasm
 
 clean: ## Remove build artifacts
 	$(CARGO) clean

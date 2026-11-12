@@ -10,7 +10,7 @@ Change the destination. Keep the momentum.
 
 **Renderer independent** · **Interruption safe** · **`no_std` + `alloc`**
 
-[See it move](#see-it-move) · [Get started](#get-started) · [Use it in your app](#use-it-in-your-app) · [Documentation](#documentation)
+[See it move](#see-it-move) · [On the web](#on-the-web-in-one-line) · [Get started](#get-started) · [Use it in your app](#use-it-in-your-app) · [Documentation](#documentation)
 
 </div>
 
@@ -76,6 +76,66 @@ nix develop .#docs --command python tools/render_readme.py
 The [sample exporter](crates/weave-scene/examples/readme_samples.rs) runs the
 actual springs and scene at 30 Hz. The [renderer](tools/render_readme.py)
 turns those values into the GIFs checked into `docs/assets/`.
+
+</details>
+
+## On the web, in one line
+
+No Rust toolchain, no wasm, no build step: [`js/weave.js`](js) is a single
+file that runs the same solver in plain JavaScript. Add it with a `<script>`
+tag (or `require` / `import`) and animate anything.
+
+```html
+<script src="weave.js"></script>
+<script>
+  Weave.animate('#box', { x: 200 });                        // move an element
+  Weave.enter('.card', { stagger: 0.05 });                  // fade + slide in, one after another
+  const temp = Weave.spring(21.4, v => label.textContent = v.toFixed(1));
+  temp.to(35.2);                                            // animate any number
+</script>
+```
+
+### Flip it, flip it back
+
+![A toggle switch flips on, is flipped back mid-flight and keeps its momentum, rendered from real weave.js output.](docs/assets/js-toggle.gif)
+
+`knob.to(0)` and `knob.to(1)` can be called at any time. A reversal keeps the
+knob's velocity instead of restarting the animation.
+
+### Lists that arrive in order
+
+![Five cards fade and slide into place one after another, then leave quickly, driven by Weave.enter and Weave.animate.](docs/assets/js-stagger.gif)
+
+`Weave.enter('.card', { stagger: 0.12 })` gives every card its own springs for
+`y` and `opacity`. Delays run on the animation clock, so tests and exports
+stay deterministic.
+
+### Numbers that roll, not jump
+
+![A temperature reading rolls from 21.4 to 35.2 °C, crosses a 30° warning line, then settles back to 24.6.](docs/assets/js-counter.gif)
+
+`Weave.spring(value, onChange)` animates any number: text, a progress bar, a
+canvas, a 3D camera.
+
+### One engine, two runtimes
+
+![The four spring presets drawn by the Rust solver and by weave.js lie on top of each other; the largest difference is floating-point rounding.](docs/assets/js-vs-rust.gif)
+
+The JavaScript engine is a port of `weaver-motion`, and the test suite checks it
+against the Rust solver sample by sample. Prefer Rust in the browser? The
+optional wasm build of `weave-web` plugs into the same API:
+`Weave.useEngine(new Motion(false))`. See the [weave.js guide](js/README.md).
+
+<details>
+<summary>Regenerate these animations</summary>
+
+```sh
+nix develop .#docs --command python tools/render_js_examples.py
+```
+
+The [sample script](js/tools/samples.js) drives the public JS API with a
+manual 30 Hz clock; the [renderer](tools/render_js_examples.py) draws the
+frames.
 
 </details>
 
@@ -184,7 +244,8 @@ optional. See the [portability guide](docs/PORTABILITY.md).
 | [`weave-geometry`](crates/weave-geometry) | Rounded rectangles, Bézier correspondence, validated morphs, and caching |
 | [`weave-scene`](crates/weave-scene) | Stable identity, shared-element FLIP, bounds transitions, and choreography |
 | [`weave-wgpu`](crates/weave-wgpu) | Draw lists and an optional GPU renderer (`wgpu` feature) |
-| [`weave-web`](crates/weave-web) | CSS presentation and an optional DOM adapter (`web` feature) |
+| [`weave-web`](crates/weave-web) | CSS presentation, an optional DOM adapter and the wasm `Motion` handle API (`web` feature) |
+| [`js/weave.js`](js) | The same springs in plain JavaScript: `Weave.spring`, `Weave.animate`, `Weave.enter`; wasm optional |
 
 ```text
 state + layout → scene → spring / tween → presentation → your renderer
@@ -213,7 +274,8 @@ changing their semantic state.
 
 The portable core, geometry, scene, and terminal demos are implemented.
 The optional GPU and web adapters have been compiled; execution on a GPU
-or in a browser was not verified in the reference environment. The previews
+was not verified in the reference environment. `weave.js` and the wasm
+`Motion` are tested in Node, where they produce identical trajectories. The previews
 above do not establish adapter performance or device frame rates.
 
 Morphing supports compatible contours. Topology changes such as holes,

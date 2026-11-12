@@ -14,3 +14,6 @@ result-*
 .vscode/
 .DS_Store
 *.swp
+
+# wasm build output (make wasm)
+js/pkg/

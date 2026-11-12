@@ -36,6 +36,29 @@ See [`docs/MOTION.md`](docs/MOTION.md), the new motion guide.
 
 ### Added
 
+#### Web without wasm (`js/weave.js`)
+
+* `js/weave.js`: a single-file JavaScript port of the `weaver-motion` spring
+  solver, motion tokens and motion policy. No build step, no dependencies;
+  works as a `<script>` tag, with `require` and through bundlers. Typings in
+  `js/weave.d.ts`.
+* A simple API: `Weave.spring(value, onChange)` (`to`, `set`, `stop`),
+  `Weave.animate(target, { x, y, scale, rotate, opacity })`,
+  `Weave.enter(target, { stagger })`, `Weave.reducedMotion()` following the
+  system setting, and `Weave.manual()` / `Weave.tick()` for deterministic time.
+* Backends as an option: `Weave.useEngine()` swaps the JavaScript engine for
+  the wasm `Motion` of `weave-web` without changing application code.
+* `weaver-motion` example `js_fixture` and a Node test suite that checks the
+  JavaScript engine against the Rust solver sample by sample.
+* Four new README animations rendered from the JS API
+  (`tools/render_js_examples.py`).
+
+#### Web adapter (`weave-web`)
+
+* `Motion`: handle-based springs for JavaScript, exported with the `web`
+  feature (camelCase methods) and usable from Rust without it. The crate now
+  also builds as a `cdylib` so the `.wasm` can be loaded in a browser.
+
 #### Core (`weaver-motion`)
 
 * Exact-time damped spring solver: the closed-form solution of

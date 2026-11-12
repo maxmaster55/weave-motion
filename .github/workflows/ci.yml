@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
   workflow_dispatch:
 
@@ -68,3 +68,22 @@ jobs:
         run: |
           rustup target add wasm32-unknown-unknown
           cargo check -p weave-web --target wasm32-unknown-unknown
+
+  # weave.js must keep producing the same motion as the Rust solver.
+  javascript:
+    name: weave.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - name: Rust reference samples are up to date
+        run: |
+          cargo run -q -p weaver-motion --example js_fixture > /tmp/springs.json
+          diff -q /tmp/springs.json js/test/fixtures/springs.json
+      - name: Test
+        run: node --test js/test/*.test.js

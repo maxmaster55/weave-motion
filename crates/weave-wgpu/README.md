@@ -1,6 +1,6 @@
 # weave-wgpu
 
-GPU rendering adapter for the [Weave](../README.md) motion engine.
+GPU rendering adapter for the [Weave](../../README.md) motion engine.
 
 ## Layers
 

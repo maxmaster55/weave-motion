@@ -1,0 +1,14 @@
+{
+  "name": "weave-motion",
+  "version": "0.1.0",
+  "description": "Spring motion for the web: interruptible springs, element animation, reduced-motion aware. One file, no wasm required (wasm engine optional).",
+  "main": "weave.js",
+  "types": "weave.d.ts",
+  "files": ["weave.js", "weave.d.ts", "README.md"],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "keywords": ["animation", "spring", "motion", "physics", "ui", "wasm"],
+  "license": "MIT OR Apache-2.0",
+  "repository": { "type": "git", "url": "https://github.com/maxmaster55/weave-motion", "directory": "js" }
+}
