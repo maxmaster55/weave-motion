@@ -42,7 +42,8 @@ extern crate alloc;
 mod motion;
 mod style;
 
-pub use motion::{preset, Motion};
+pub use motion::{preset, role, Motion};
+pub use weaver_motion::{MotionRole, MotionScheme};
 pub use style::DomStyle;
 
 #[cfg(all(feature = "web", target_arch = "wasm32"))]
